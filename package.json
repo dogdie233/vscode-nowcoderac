@@ -9,15 +9,94 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "authentication": [
+      {
+        "id": "nowcoderac",
+        "label": "NowCoder"
+      }
+    ],
     "commands": [
+      {
+        "command": "nowcoderac.createContestWorkspace",
+        "title": "创建比赛工作空间",
+        "category": "NowCoder"
+      },
       {
         "command": "nowcoderac.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "nowcoderac.refreshProblemList",
+        "title": "刷新题目列表",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "nowcoderac.openProblem",
+        "title": "打开题目"
+      },
+      {
+        "command": "nowcoderac.submitSolution",
+        "title": "提交解答"
+      },
+      {
+        "command": "nowcoderac.refreshSubmissionList",
+        "title": "刷新提交列表",
+        "icon": "$(refresh)"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "nowcoderac-explorer",
+          "title": "牛客竞赛",
+          "icon": "resources/b_a1480ce5a5bc9f36ecad245ab6cb8f05.png"
+        }
+      ]
+    },
+    "views": {
+      "nowcoderac-explorer": [
+        {
+          "id": "nowcoderac-problems",
+          "name": "题目列表"
+        },
+        {
+          "id": "nowcoderac-submissions",
+          "name": "我的提交"
+        },
+        {
+          "id": "nowcoderac-rankings",
+          "name": "排名"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "nowcoderac.refreshProblemList",
+          "when": "view == nowcoderac-problems",
+          "group": "navigation"
+        },
+        {
+          "command": "nowcoderac.refreshSubmissionList",
+          "when": "view == nowcoderac-submissions",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "nowcoderac.openProblem",
+          "when": "view == nowcoderac-problems",
+          "group": "inline"
+        },
+        {
+          "command": "nowcoderac.submitSolution",
+          "when": "view == nowcoderac-problems",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -28,14 +107,20 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.96.0",
+    "@types/axios": "^0.14.4",
+    "@types/cheerio": "^0.22.35",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
-    "eslint": "^9.16.0",
-    "typescript": "^5.7.2",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.16.0",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "cheerio": "^1.0.0-rc.12"
   }
 }
