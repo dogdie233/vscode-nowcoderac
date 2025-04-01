@@ -50,12 +50,15 @@ export class ContestManager {
         if (this.configService.getConfigPath() === potentialConfigPath) {
             return;
         }
+        const config = await this.configService.load(potentialConfigPath);
 
         // 检查配置文件是否存在
-        if (fs.existsSync(potentialConfigPath)) {
-            const config = await this.configService.load(potentialConfigPath);
-            this._onProblemsUpdated.fire(config?.problems || undefined); // 更新题目列表
+        if (config) {
+            this._onProblemsUpdated.fire(config.problems || undefined); // 更新题目列表
             this._onSubmissionsUpdated.fire([]);  // 之后获取提交记录
+            if (!config.problems) {
+                await this.getProblems(true);  // 如果没有题目列表，则刷新
+            }
         } else {
             await this.configService.load(null);
             this._onProblemsUpdated.fire(undefined); // 清空题目列表
