@@ -13,19 +13,36 @@ class NowCoderAuthenticationProvider implements vscode.AuthenticationProvider {
     }
 
     async createSession(scopes: string[]): Promise<vscode.AuthenticationSession> {
-        const cookie = await vscode.window.showInputBox({
+        const cookieStr = await vscode.window.showInputBox({
             prompt: '请输入NowCoder的cookie值',
             ignoreFocusOut: true,
-            password: true
+            password: false
         });
 
-        if (!cookie) {
+        if (!cookieStr) {
             throw new Error('Cookie不能为空');
         }
 
+        var token;
+        if (cookieStr.indexOf('=') === -1) {
+            token = cookieStr;
+        } else {
+            const cookieParts = cookieStr.split(';').map(part => part.split('='));
+            const cookieObj: { [key: string]: string } = {};
+            for (const [key, value] of cookieParts) {
+                cookieObj[key.trim()] = value.trim();
+            }
+            token = cookieObj['t'];
+        }
+        if (!token) {
+            throw new Error('无效的cookie/token值');
+        }
+
+        console.log('NowCoder token:', token);
+
         const session: vscode.AuthenticationSession = {
             id: Date.now().toString(),
-            accessToken: cookie,
+            accessToken: token,
             account: {
                 label: 'NowCoder User',
                 id: Date.now().toString()
@@ -40,7 +57,7 @@ class NowCoderAuthenticationProvider implements vscode.AuthenticationProvider {
             changed: []
         });
 
-        await this.context.secrets.store(`nowcoderac-${session.id}`, cookie);
+        await this.context.secrets.store(`nowcoderac-${session.id}`, token);
         return session;
     }
 
