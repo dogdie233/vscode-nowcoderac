@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { NowCoderAuthenticationProvider } from './nowCoderAuthenticationProvider';
+import { NowCoderAuthenticationProvider } from './nowcoderAuthenticationProvider';
 import { getContestManager } from './services/contestManager';
 import { ProblemsProvider, ProblemItem } from './views/problemsProvider';
 import { SubmissionsProvider } from './views/submissionsProvider';

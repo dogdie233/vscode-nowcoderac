@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-class NowCoderAuthenticationProvider implements vscode.AuthenticationProvider {
+class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
     private sessions: vscode.AuthenticationSession[] = [];
     private readonly sessionChangeEmitter = new vscode.EventEmitter<vscode.AuthenticationProviderAuthenticationSessionsChangeEvent>();
 
@@ -76,4 +76,4 @@ class NowCoderAuthenticationProvider implements vscode.AuthenticationProvider {
     }
 }
 
-export { NowCoderAuthenticationProvider };
+export { NowcoderAuthenticationProvider as NowCoderAuthenticationProvider };
