@@ -15,7 +15,7 @@ export async function createContestSpace() {
         });
 
         if (!contestId) {
-            vscode.window.showErrorMessage('未提供比赛ID，操作已取消');
+            vscode.window.showInformationMessage('未提供比赛ID，操作已取消');
             return;
         }
 
@@ -28,7 +28,7 @@ export async function createContestSpace() {
         });
 
         if (!folderUri || folderUri.length === 0) {
-            vscode.window.showErrorMessage('未选择保存位置，操作已取消');
+            vscode.window.showInformationMessage('未选择保存位置，操作已取消');
             return;
         }
 
@@ -41,7 +41,6 @@ export async function createContestSpace() {
         // 创建nowcoderac.json文件
         const jsonContent = JSON.stringify({
             contestId: contestId,
-            createdAt: new Date().toISOString(),
             problems: []
         }, null, 2);
 

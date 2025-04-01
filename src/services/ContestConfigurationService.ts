@@ -10,11 +10,11 @@ export class ContestConfigurationService {
     private configPath: string | null = null;
 
     /**
-     * 设置配置文件路径。
-     * @param configPath 配置文件路径。
+     * 获取当前配置信息。
+     * @returns 当前配置信息。
      */
-    setConfigPath(configPath: string | null) {
-        this.configPath = configPath;
+    getConfig(): NowCoderConfig | null {
+        return this.config;
     }
 
     /**
@@ -22,7 +22,13 @@ export class ContestConfigurationService {
      * @param configPath 配置文件路径。
      * @returns 加载的配置信息，如果加载失败则返回null。
      */
-    async loadConfig(configPath: string): Promise<NowCoderConfig | null> {
+    async load(configPath: string | null): Promise<NowCoderConfig | null> {
+        if (configPath === null) {
+            this.configPath = null;
+            this.config = null;
+            return null;
+        }
+        
         try {
             const configContent = fs.readFileSync(configPath, 'utf-8');
             this.config = JSON.parse(configContent) as NowCoderConfig;
@@ -34,25 +40,13 @@ export class ContestConfigurationService {
             return null;
         }
     }
-
     /**
-     * 获取当前配置信息。
-     * @returns 当前配置信息。
+     * 保存当前配置信息到配置文件。
      */
-    getConfig(): NowCoderConfig | null {
-        return this.config;
-    }
-
-    /**
-     * 更新配置文件。
-     * @param newConfig 新的配置信息。
-     */
-    async updateConfig(newConfig: NowCoderConfig): Promise<void> {
-        this.config = newConfig;
-
+    async save(): Promise<void> {
         if (this.configPath) {
             try {
-                fs.writeFileSync(this.configPath, JSON.stringify(newConfig, null, 2));
+                fs.writeFileSync(this.configPath, JSON.stringify(this.config, null, 2));
             } catch (error) {
                 console.error('Failed to write config file:', error);
                 vscode.window.showErrorMessage('保存配置文件失败');

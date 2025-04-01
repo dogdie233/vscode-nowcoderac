@@ -2,27 +2,28 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { nowcoderService } from './nowcoderService';
-import { Problem, NowCoderConfig, SubmissionStatus, ProgrammingLanguage } from '../models/models';
+import { Problem, SubmissionStatus, ProgrammingLanguage, ProblemInfo, ProblemExtra, SubmissionListItem, SubmissionList } from '../models/models';
 import { ContestConfigurationService } from './ContestConfigurationService';
-import { ContestDataManager } from './ContestDataManager';
+import { ProblemItem } from '../views/problemsProvider';
 
 /**
  * 管理NowCoder比赛、题目和提交
  */
 export class ContestManager {
-    private readonly _onProblemsUpdated = new vscode.EventEmitter<Problem[]>();
+    private readonly _onProblemsUpdated = new vscode.EventEmitter<Problem[] | undefined>();
     private readonly _onSubmissionStatusChanged = new vscode.EventEmitter<SubmissionStatus>();
+    private readonly _onSubmissionsUpdated = new vscode.EventEmitter<SubmissionListItem[] | undefined>();
 
     // 公开事件
     readonly onProblemsUpdated = this._onProblemsUpdated.event;
     readonly onSubmissionStatusChanged = this._onSubmissionStatusChanged.event;
+    readonly onSubmissionsUpdated = this._onSubmissionsUpdated.event;
 
     private configService: ContestConfigurationService;
-    private dataManager: ContestDataManager;
+    private submissionsCache: SubmissionListItem[] | undefined = [];
 
     constructor(private context: vscode.ExtensionContext) {
         this.configService = new ContestConfigurationService();
-        this.dataManager = new ContestDataManager(this.configService);
 
         // 监听编辑器变化
         vscode.window.onDidChangeActiveTextEditor(this.handleActiveEditorChange, this);
@@ -53,106 +54,81 @@ export class ContestManager {
 
         // 检查配置文件是否存在
         if (fs.existsSync(potentialConfigPath)) {
-            this.configService.setConfigPath(potentialConfigPath);
-            const config = await this.configService.loadConfig(potentialConfigPath);
-            if (config) {
-                // 如果配置文件有更新，尝试加载题目
-                await this.refreshProblems();
-            }
+            const config = await this.configService.load(potentialConfigPath);
+            this._onProblemsUpdated.fire(config?.problems || undefined); // 更新题目列表
+            this._onSubmissionsUpdated.fire([]);  // 之后获取提交记录
         } else {
-            this.configService.setConfigPath(null);
-            this._onProblemsUpdated.fire([]); // 清空题目列表
+            await this.configService.load(null);
+            this._onProblemsUpdated.fire(undefined); // 清空题目列表
+            this._onSubmissionsUpdated.fire(undefined);  // 清空提交记录
         }
     }
 
     /**
-     * 刷新题目列表
+     * 获取题目列表，如果没有缓存则刷新（可能不包含extra信息）
      * @param noCache 是否不使用缓存
+     * @returns 题目列表，如果失败则是null
      */
-    async refreshProblems(noCache: boolean = false): Promise<Problem[]> {
+    async getProblems(noCache: boolean = false) : Promise<Problem[] | null> {
         const config = this.configService.getConfig();
         if (!config || !config.contestId) {
-            vscode.window.showInformationMessage('请先设置比赛ID');
-            return [];
-        }
-
-        const problems = (noCache ? null : config.problems) || await this.fetchAllProblems();
-
-        // 更新配置文件中的题目缓存
-        await this.updateConfig({
-            ...config,
-            problems: problems,
-        });
-
-        // 触发事件
-        this._onProblemsUpdated.fire(problems);
-        return problems;
-    }
-
-    /**
-     * 获取所有题目
-     */
-    async fetchAllProblems(): Promise<Problem[]> {
-        const config = this.configService.getConfig();
-        if (!config || !config.contestId) {
-            console.log('Contest ID is not set in the configuration.');
-            return [];
-        }
-
-        return await this.dataManager.fetchAllProblems(config.contestId);
-    }
-
-    /**
-     * 获取题目列表
-     */
-    async getProblems(): Promise<Problem[]> {
-        const config = this.configService.getConfig();
-        if (!config) {
-            return [];
-        }
-
-        if (config.problems && config.problems.length > 0) {
-            return config.problems;
-        }
-
-        return await this.refreshProblems();
-    }
-
-    /**
-     * 获取题目详情
-     * @param problemIndex 题目索引
-     */
-    async getProblemDetail(problemIndex: string): Promise<Problem | null> {
-        const config = this.configService.getConfig();
-        if (!config || !config.contestId) {
-            vscode.window.showInformationMessage('请先设置比赛ID');
             return null;
         }
 
-        // 先从缓存找
-        if (config.problems) {
-            const cachedProblem = config.problems.find(p => p.info.index === problemIndex);
-            if (cachedProblem && cachedProblem.extra.content) {
-                return cachedProblem;
-            }
-        }
-
-        const problem = await this.dataManager.getProblemDetail(config.contestId, problemIndex);
-
-        if (problem) {
-            // 更新缓存
-            if (!config.problems) {
-                config.problems = [];
+        if (noCache || !config.problems || config.problems.length === 0) {
+            // 如果没有题目缓存，尝试刷新题目列表
+            const problemList = await nowcoderService.getProblemList(config.contestId);
+            if (!problemList) {
+                vscode.window.showErrorMessage('获取题目列表失败，请检查网络连接');
+                return null;
             }
 
-            const index = config.problems.findIndex(p => p.info.index === problemIndex);
-            config.problems.push(problem);
-            await this.updateConfig(config);
+            config.problems = problemList.data.map((info: ProblemInfo) => {
+                const problem: Problem = {
+                    info: info,
+                    extra: config.problems?.find(p => p.info.index === info.index)?.extra
+                };
+                return problem;
+            });
+            await this.configService.save();
+            this._onProblemsUpdated.fire(config.problems);
+        }
+        
+        return config.problems;
+    }
 
-            return problem;
+    /**
+     * 获取题目的Extra信息
+     * @param index 题目索引
+     * @param noCache 是否不使用缓存
+     * @returns 题目详情，如果失败则是null
+     */
+    async getProblemExtra(index: string, noCache: boolean = false) : Promise<ProblemExtra | null> {
+        const config = this.configService.getConfig();
+        if (!config || !config.contestId) {
+            vscode.window.showInformationMessage('当前不在比赛环境中，创建比赛空间先');
+            return null;
         }
 
-        return null;
+        const problem = config.problems?.find(p => p.info.index === index);
+        if (!problem) {
+            vscode.window.showErrorMessage(`题目"${index}"不存在`);
+            return null;
+        }
+        if (problem.extra && !noCache) {
+            return problem.extra;
+        }
+
+        const extra = await nowcoderService.getProblemExtra(config.contestId, index);
+        if (!extra) {
+            vscode.window.showErrorMessage(`获取题目"${index}"详情失败`);
+            return null;
+        }
+
+        problem.extra = extra;
+        await this.configService.save();
+        this._onProblemsUpdated.fire(config.problems!);
+        return problem.extra;
     }
 
     /**
@@ -161,11 +137,17 @@ export class ContestManager {
      */
     async openProblem(problem: Problem): Promise<void> {
         // 获取详情
-        const problemDetail = await this.getProblemDetail(problem.info.index);
-        if (!problemDetail || !problemDetail.extra.content) {
-            return;
+        if (!problem.extra) {
+            const extra = await this.getProblemExtra(problem.info.index);
+            if (!extra) {
+                vscode.window.showErrorMessage(`打开题目"${problem.info.index}"失败`);
+                return;
+            }
+            problem.extra = extra;
+            await this.configService.save();
+            this._onProblemsUpdated.fire(this.configService.getConfig()?.problems || []);
         }
-
+        
         // 创建Markdown文件
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
@@ -187,16 +169,19 @@ export class ContestManager {
 
         // 生成Markdown内容
         let content = `# ${problem.info.index}. ${problem.info.title}\n\n`;
-        content += problemDetail.extra.content;
+        content += problem.extra.content;
 
         // 添加样例
-        if (problemDetail.extra.examples && problemDetail.extra.examples.length > 0) {
+        if (problem.extra.examples && problem.extra.examples.length > 0) {
             content += '## 样例\n\n';
 
-            problemDetail.extra.examples.forEach((example, index) => {
+            problem.extra.examples.forEach((example, index) => {
                 content += `### 样例 ${index + 1}\n`;
-                content += `输入:\n\`\`\`\n${example.input}\n\`\`\`\n\n`;
-                content += `输出:\n\`\`\`\n${example.output}\n\`\`\`\n\n`;
+                content += `**输入**:\n\`\`\`\n${example.input}\n\`\`\`\n\n`;
+                content += `**输出**:\n\`\`\`\n${example.output}\n\`\`\`\n\n`;
+                if (example.tips) {
+                    content += `**说明**:  \n\n${example.tips}\n\n`;
+                }
             });
         }
 
@@ -218,13 +203,14 @@ export class ContestManager {
      */
     async submitSolution(problem: Problem, language: ProgrammingLanguage): Promise<boolean> {
         if (!problem.extra) {
-            // 如果详情不完整，尝试获取详情
-            const updatedProblem = await this.getProblemDetail(problem.info.index);
-            if (!updatedProblem || !updatedProblem.extra) {
-                vscode.window.showErrorMessage('无法获取题目详情，请先打开题目');
+            const extra = await this.getProblemExtra(problem.info.index);
+            if (!extra) {
+                vscode.window.showErrorMessage(`获取题目"${problem.info.index}"详情失败`);
                 return false;
             }
-            problem = updatedProblem;
+            problem.extra = extra;
+            await this.configService.save();
+            this._onProblemsUpdated.fire(this.configService.getConfig()?.problems || []);
         }
 
         // 获取当前编辑器中的代码
@@ -251,7 +237,13 @@ export class ContestManager {
                 language
             );
 
+            if (!response) {
+                vscode.window.showErrorMessage('提交失败，请检查网络连接');
+                return false;
+            }
+
             if (response.code === 0 && response.data) {
+                const extra = problem.extra;
                 // 轮询判题结果
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
@@ -271,9 +263,14 @@ export class ContestManager {
                         try {
                             const status = await nowcoderService.getSubmissionStatus(
                                 response.data,
-                                problem.extra.tagId.toString(),
-                                problem.extra.subTagId
+                                extra.tagId.toString(),
+                                extra.subTagId
                             );
+
+                            if (!status) {
+                                vscode.window.showErrorMessage('获取判题结果失败，请检查网络连接');
+                                return false;
+                            }
 
                             // 判断是否完成
                             if (status.status !== 0) { // 0表示"等待判题"
@@ -293,6 +290,9 @@ export class ContestManager {
 
                                 // 提交完成后，触发提交状态变更事件以刷新提交列表
                                 this._onSubmissionStatusChanged.fire(status);
+                                
+                                // 不使用缓存获取提交记录，然后刷新
+                                await this.getSubmissions(true);
 
                                 return true;
                             }
@@ -302,7 +302,7 @@ export class ContestManager {
                     }
 
                     if (!isComplete) {
-                        vscode.window.showWarningMessage('获取判题结果超时，请前往NowCoder网站查看结果');
+                        vscode.window.showWarningMessage('获取判题结果超时，请前往牛客查看结果');
                     }
 
                     return true;
@@ -322,49 +322,26 @@ export class ContestManager {
 
     /**
      * 获取提交记录
+     * @param [noCache=false] 是否不使用缓存
+     * @returns 提交记录列表，如果失败则是null
      */
-    async getSubmissions(): Promise<any[]> {
+    async getSubmissions(noCache: boolean = false): Promise<SubmissionListItem[] | null> {
         const config = this.configService.getConfig();
         if (!config || !config.contestId) {
-            return [];
+            return null;
         }
 
-        return await this.dataManager.getSubmissions(config.contestId);
-    }
-
-    /**
-     * 刷新提交记录
-     */
-    async refreshSubmissions(): Promise<any[]> {
-        const config = this.configService.getConfig();
-        if (!config || !config.contestId) {
-            return [];
+        if (noCache || !this.submissionsCache) {
+            const submissions = await nowcoderService.getSubmissions(config.contestId);
+            if (!submissions) {
+                vscode.window.showErrorMessage('获取提交记录失败，请检查网络连接');
+                return null;
+            }
+            this.submissionsCache = submissions.data;
+            this._onSubmissionsUpdated.fire(this.submissionsCache);
         }
 
-        try {
-            const submissions = await this.dataManager.getSubmissions(config.contestId);
-            this._onSubmissionStatusChanged.fire(null!);
-            return submissions;
-        } catch (error) {
-            console.error('Failed to refresh submissions:', error);
-            vscode.window.showErrorMessage(`刷新提交记录失败: ${(error as Error).message}`);
-            return [];
-        }
-    }
-
-    /**
-     * 更新配置文件
-     * @param newConfig 新的配置
-     */
-    private async updateConfig(newConfig: NowCoderConfig): Promise<void> {
-        await this.configService.updateConfig(newConfig);
-    }
-
-    /**
-     * 获取当前配置
-     */
-    getConfig(): NowCoderConfig | null {
-        return this.configService.getConfig();
+        return this.submissionsCache;
     }
 }
 

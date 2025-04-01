@@ -52,11 +52,24 @@ export function activate(context: vscode.ExtensionContext) {
             title: "正在刷新题目列表...",
             cancellable: false
         }, async () => {
-            await contestManager.refreshProblems(true);
-            problemsProvider.refresh();
+            await contestManager.getProblems(true);
         });
     });
     context.subscriptions.push(refreshProblemsDisposable);
+
+    // 刷新题目内容命令
+    const refreshProblemDisposable = vscode.commands.registerCommand('nowcoderac.refreshProblemContent', async (problemItem: ProblemItem) => {
+        if (problemItem) {
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "正在刷新题目...",
+                cancellable: false
+            }, async () => {
+                await contestManager.getProblemExtra(problemItem.problem.info.index, true);
+            });
+        }
+    });
+    context.subscriptions.push(refreshProblemDisposable);
     
     // 打开题目命令
     const openProblemDisposable = vscode.commands.registerCommand('nowcoderac.openProblem', async (problemItem: ProblemItem) => {
@@ -96,7 +109,13 @@ export function activate(context: vscode.ExtensionContext) {
     // 刷新提交记录命令
     context.subscriptions.push(
         vscode.commands.registerCommand('nowcoderac.refreshSubmissionList', async () => {
-            await submissionsProvider.forceRefresh();
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "正在刷新提交记录...",
+                cancellable: false
+            }, async () => {
+                await contestManager.getSubmissions(true);
+            });
         })
     );
 

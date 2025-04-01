@@ -6,22 +6,24 @@ export interface Contest {
     name?: string;
 }
 
-/**
- * 题目列表的响应
- */
-export interface ProblemListResponse {
+export interface Response<T> {
     msg: string;
     code: number;
-    data: {
-        data: ProblemInfo[];
-        basicInfo: BasicInfo;
-    };
+    data: T;
+}
+
+/**
+ * 比赛题目列表
+ */
+export interface ContestProblemList {
+    data: ProblemInfo[];
+    basicInfo: ContestBasicInfo;
 }
 
 /**
  * 比赛基本信息
  */
-export interface BasicInfo {
+export interface ContestBasicInfo {
     contestId: number;
     pageCount: number;
     problemCount: number;
@@ -33,7 +35,7 @@ export interface BasicInfo {
  * 完整题目信息
  */
 export interface Problem {
-    extra: ProblemExtra;
+    extra?: ProblemExtra;
     info: ProblemInfo;
 }
 
@@ -70,6 +72,7 @@ export interface ProblemInfo {
 export interface ProblemExample {
     input: string;
     output: string;
+    tips: string | null;
 }
 
 /**
@@ -107,21 +110,17 @@ export interface SubmissionStatus {
 /**
  * 提交列表API响应
  */
-export interface SubmissionListResponse {
-    msg: string;
-    code: number;
-    data: {
-        data: SubmissionListItem[];
-        isContestFinished: boolean;
-        basicInfo: {
-            basicUid: number;
-            contestId: number;
-            pageCount: number;
-            pageSize: number;
-            statusCount: number;
-            searchUserName: string;
-            pageCurrent: number;
-        }
+export interface SubmissionList {
+    data: SubmissionListItem[];
+    isContestFinished: boolean;
+    basicInfo: {
+        basicUid: number;
+        contestId: number;
+        pageCount: number;
+        pageSize: number;
+        statusCount: number;
+        searchUserName: string;
+        pageCurrent: number;
     }
 }
 

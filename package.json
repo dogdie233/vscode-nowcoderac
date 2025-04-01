@@ -1,7 +1,7 @@
 {
   "name": "nowcoderac",
   "displayName": "NowCoderAC",
-  "description": "Solve problems in vsc fully",
+  "description": "Solve problems in VSCode fully",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
@@ -24,26 +24,34 @@
         "category": "NowCoder"
       },
       {
-        "command": "nowcoderac.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "nowcoderac.refreshProblemList",
         "title": "刷新题目列表",
-        "icon": "$(refresh)"
+        "icon": "$(refresh)",
+        "category": "NowCoder"
+      },
+      {
+        "command": "nowcoderac.refreshProblemContent",
+        "title": "刷新题目内容",
+        "icon": "$(refresh)",
+        "category": "NowCoder"
       },
       {
         "command": "nowcoderac.openProblem",
-        "title": "打开题目"
+        "title": "打开题目",
+        "icon": "$(file)",
+        "category": "NowCoder"
       },
       {
         "command": "nowcoderac.submitSolution",
-        "title": "提交解答"
+        "title": "提交解答",
+        "icon": "$(debug-start)",
+        "category": "NowCoder"
       },
       {
         "command": "nowcoderac.refreshSubmissionList",
         "title": "刷新提交列表",
-        "icon": "$(refresh)"
+        "icon": "$(refresh)",
+        "category": "NowCoder"
       }
     ],
     "viewsContainers": {
@@ -85,6 +93,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "nowcoderac.refreshProblemContent",
+          "when": "view == nowcoderac-problems",
+          "group": "inline"
+        },
         {
           "command": "nowcoderac.openProblem",
           "when": "view == nowcoderac-problems",

@@ -17,12 +17,6 @@ export class SubmissionsProvider implements vscode.TreeDataProvider<SubmissionIt
         this._onDidChangeTreeData.fire();
     }
     
-    // 强制刷新提交记录 - 添加此方法
-    async forceRefresh(): Promise<void> {
-        await this.contestManager.refreshSubmissions();
-        this.refresh();
-    }
-    
     getTreeItem(element: SubmissionItem | MessageItem): vscode.TreeItem {
         return element;
     }
@@ -35,7 +29,7 @@ export class SubmissionsProvider implements vscode.TreeDataProvider<SubmissionIt
         try {
             const submissions = await this.contestManager.getSubmissions();
             if (!submissions || submissions.length === 0) {
-                return [new MessageItem('暂无提交记录', '请先提交代码')];
+                return [new MessageItem('暂无提交记录', '交一发先')];
             }
             
             return submissions.map(submission => new SubmissionItem(submission));
@@ -53,11 +47,21 @@ export class SubmissionItem extends vscode.TreeItem {
             vscode.TreeItemCollapsibleState.None
         );
         
+        const submitTime = new Date(submission.submitTime * 1000);
+        const formattedTime = submitTime.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }).replace(/\//g, '-').replace(/,/, '');
+
         this.tooltip = `状态: ${submission.statusMessage}
 运行时间: ${submission.time}ms
 内存: ${submission.memory}KB
 语言: ${submission.languageName}
-提交时间: ${submission.submitTime}`;
+提交时间: ${formattedTime}`;
         
         this.description = `语言:${submission.language} | 时间:${submission.time}ms | 内存:${submission.memory}KB | ${submission.submitTime}`;
         

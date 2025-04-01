@@ -50,17 +50,17 @@ export class HtmlParser {
         
         // 题目描述
         let content = '## 题目描述\n\n';
-        content += this.parseContentWithImages($, descriptionDiv) + '\n\n';
+        content += this.parseContentRich($, descriptionDiv) + '\n\n';
         
         // 输入描述
         const inputDescTitle = $('h2:contains("输入描述:")');
         content += '## 输入描述\n\n';
-        content += this.parseContentWithImages($, inputDescTitle.next('pre')) + '\n\n';
+        content += this.parseContentRich($, inputDescTitle.next('pre')) + '\n\n';
         
         // 输出描述
         const outputDescTitle = $('h2:contains("输出描述:")');
         content += '## 输出描述\n\n';
-        content += this.parseContentWithImages($, outputDescTitle.next('pre')) + '\n\n';
+        content += this.parseContentRich($, outputDescTitle.next('pre')) + '\n\n';
         
         return content;
     }
@@ -71,45 +71,107 @@ export class HtmlParser {
      * @param element Cheerio元素
      * @returns 解析后的Markdown文本
      */
-    private static parseContentWithImages($: cheerio.Root, element: cheerio.Cheerio): string {
-        let result = '';
-        
-        element.contents().each((_, node) => {
+    private static parseContentRich($: cheerio.Root, element: cheerio.Cheerio): string {
+        if (!element || element.length === 0) {
+            return '';
+        }
+
+        // 递归处理HTML节点
+        const parseNode = (node: cheerio.Element): string => {
+            if (!node) {
+                return '';
+            }
+            
+            // 文本节点
             if (node.type === 'text') {
-                // 处理文本中的换行符
                 const text = $(node).text();
-                result += text.trim().replace(/\n/g, '  \n');
-            } else if (node.type === 'tag') {
+                return text.trim().replace(/\n/g, '  \n');
+            }
+            
+            // 标签节点
+            if (node.type === 'tag') {
                 const el = $(node);
+                
+                // 图片处理
                 if (node.name === 'img') {
                     const src = el.attr('src') || '';
                     const alt = el.attr('alt') || '';
                     
                     if (src.includes('nowcoder.com/equation')) {
-                        result += ` $${alt}$ `; // LaTeX公式
+                        return ` $${alt}$ `; // LaTeX公式
                     } else {
-                        result += ` ![${alt}](${src}) `; // 普通图片
-                    }
-                } else if (node.name === 'br') {
-                    result += '  \n'; // 处理 <br> 标签
-                } else if (node.name === 'p') {
-                    // 对于段落标签，确保其前后有换行
-                    result += '  \n' + $(node).text().trim() + '\n';
-                } else if (node.name === 'u') {
-                    const child = node.firstChild;
-                    if (!child || child.type !== 'tag') {
-                        return;
-                    }
-                    if (child.tagName === 'strong') {
-                        result += `**${el.text().trim()}**`; // 加粗文本
+                        return ` ![${alt}](${src}) `; // 普通图片
                     }
                 }
+                
+                // 处理各种标签
+                switch (node.name) {
+                    case 'br':
+                        return '  \n';
+                    case 'p':
+                        return '  \n' + processChildren(node) + '  \n';
+                    case 'div':
+                        return processChildren(node) + '  \n';
+                    case 'strong':
+                    case 'b':
+                        return `**${processChildren(node)}**`;
+                    case 'em':
+                    case 'i':
+                        return `*${processChildren(node)}*`;
+                    case 'u':
+                        // 检查u标签下是否有strong子标签
+                        const firstChild = node.firstChild;
+                        if (firstChild && firstChild.type === 'tag' && firstChild.name === 'strong') {
+                            return `**${$(firstChild).text().trim()}**`;
+                        }
+                        return `__${processChildren(node)}__`;
+                    case 'code':
+                        return `\`${processChildren(node)}\``;
+                    case 'pre':
+                        return `\n\`\`\`\n${processChildren(node)}\n\`\`\`\n`;
+                    case 'ul':
+                        return processChildren(node);
+                    case 'ol':
+                        return processChildren(node);
+                    case 'li':
+                        return `- ${processChildren(node)}\n`;
+                    case 'table':
+                        return `\n${processChildren(node)}\n`;
+                    case 'tr':
+                        return `${processChildren(node)}\n`;
+                    case 'th':
+                    case 'td':
+                        return `| ${processChildren(node)} `;
+                    default:
+                        // 默认处理：递归处理子节点
+                        return processChildren(node);
+                }
             }
+            
+            return '';
+        };
+        
+        // 处理元素的所有子节点
+        const processChildren = (node: cheerio.Element): string => {
+            let result = '';
+            $(node).contents().each((_, child) => {
+                result += parseNode(child as cheerio.Element);
+            });
+            return result;
+        };
+        
+        // 处理根元素
+        let result = '';
+        element.contents().each((_, node) => {
+            result += parseNode(node as cheerio.Element);
         });
-
+        
         // 后处理
-        // 合并连续的加粗
+        // 合并连续的加粗、斜体等标记
         result = result.replaceAll('****', '');
+        result = result.replaceAll('____', '');
+        result = result.replaceAll('**__', '**');
+        result = result.replaceAll('__**', '**');
         
         return result;
     }
@@ -129,10 +191,8 @@ export class HtmlParser {
             // 获取输入输出内容
             const input = exampleDiv.find('.question-oi-mod:first-child .question-oi-cont pre').text().trim();
             const output = exampleDiv.find('.question-oi-mod:nth-child(2) .question-oi-cont pre').text().trim();
-            var tips: string | null = exampleDiv.find('.question-oi-mod:nth-child(3) .question-oi-cont pre').text().trim();
-            if (!tips || tips === '') {
-                tips = null;
-            }
+            const tipsElement = exampleDiv.find('.question-oi-mod:nth-child(3) .question-oi-cont pre');
+            const tips = tipsElement ? this.parseContentRich($, tipsElement) : null;
             
             if (input && output) {
                 examples.push({ input, output, tips });
