@@ -1,8 +1,9 @@
 {
   "name": "nowcoderac",
   "displayName": "NowCoderAC",
-  "description": "Solve problems in VSCode fully",
+  "description": "Solve nowcoder contest problems in VSCode fully",
   "version": "0.0.2",
+  "icon": "resources/icon.png",
   "publisher": "dogdie233",
   "repository": {
     "type": "git",
