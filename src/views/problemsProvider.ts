@@ -42,8 +42,10 @@ export class ProblemItem extends vscode.TreeItem {
             vscode.TreeItemCollapsibleState.None
         );
         
+        const acceptedRate = (problem.info.acceptedCount / Math.max(1, problem.info.submitCount) * 100).toFixed(2);
+
         this.tooltip = `${problem.info.title}
-通过率: ${(problem.info.acceptedCount / Math.max(1, problem.info.submitCount) * 100).toFixed(2)}%
+通过率: ${problem.info.acceptedCount}/${problem.info.submitCount}(${acceptedRate})%
 状态: ${problem.info.myStatus || '未提交'}`;
         
         this.description = `通过率: ${(problem.info.acceptedCount / Math.max(1, problem.info.submitCount) * 100).toFixed(2)}% | ${problem.info.myStatus || '未提交'}`;
