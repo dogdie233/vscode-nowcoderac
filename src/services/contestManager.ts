@@ -38,7 +38,7 @@ export class ContestManager {
      * @param editor 活动编辑器
      */
     private async handleActiveEditorChange(editor: vscode.TextEditor | undefined): Promise<void> {
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
             return;
         }
 
