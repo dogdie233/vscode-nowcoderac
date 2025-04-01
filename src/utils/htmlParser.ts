@@ -86,18 +86,30 @@ export class HtmlParser {
                     const alt = el.attr('alt') || '';
                     
                     if (src.includes('nowcoder.com/equation')) {
-                        result += `$${alt}$ `; // LaTeX公式
+                        result += ` $${alt}$ `; // LaTeX公式
                     } else {
-                        result += `![${alt}](${src}) `; // 普通图片
+                        result += ` ![${alt}](${src}) `; // 普通图片
                     }
                 } else if (node.name === 'br') {
                     result += '  \n'; // 处理 <br> 标签
                 } else if (node.name === 'p') {
                     // 对于段落标签，确保其前后有换行
                     result += '  \n' + $(node).text().trim() + '\n';
+                } else if (node.name === 'u') {
+                    const child = node.firstChild;
+                    if (!child || child.type !== 'tag') {
+                        return;
+                    }
+                    if (child.tagName === 'strong') {
+                        result += `**${el.text().trim()}**`; // 加粗文本
+                    }
                 }
             }
         });
+
+        // 后处理
+        // 合并连续的加粗
+        result = result.replaceAll('****', '');
         
         return result;
     }
@@ -116,10 +128,14 @@ export class HtmlParser {
             
             // 获取输入输出内容
             const input = exampleDiv.find('.question-oi-mod:first-child .question-oi-cont pre').text().trim();
-            const output = exampleDiv.find('.question-oi-mod:last-child .question-oi-cont pre').text().trim();
+            const output = exampleDiv.find('.question-oi-mod:nth-child(2) .question-oi-cont pre').text().trim();
+            var tips: string | null = exampleDiv.find('.question-oi-mod:nth-child(3) .question-oi-cont pre').text().trim();
+            if (!tips || tips === '') {
+                tips = null;
+            }
             
             if (input && output) {
-                examples.push({ input, output });
+                examples.push({ input, output, tips });
             }
         });
         
