@@ -3,6 +3,11 @@
   "displayName": "NowCoderAC",
   "description": "Solve problems in VSCode fully",
   "version": "0.0.1",
+  "publisher": "dogdie233",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dogdie233/vscode-nowcoderac.git"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },
