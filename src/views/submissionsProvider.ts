@@ -11,6 +11,9 @@ export class SubmissionsProvider implements vscode.TreeDataProvider<SubmissionIt
         contestManager.onSubmissionStatusChanged(() => {
             this.refresh();
         });
+        contestManager.onSubmissionsUpdated(() => {
+            this.refresh();
+        });
     }
     
     refresh(): void {
