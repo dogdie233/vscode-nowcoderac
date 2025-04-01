@@ -1,13 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { NowCoderAuthenticationProvider } from './NowCoderAuthenticationProvider';
+import { NowCoderAuthenticationProvider } from './nowCoderAuthenticationProvider';
 import { getContestManager } from './services/contestManager';
 import { ProblemsProvider, ProblemItem } from './views/problemsProvider';
 import { SubmissionsProvider } from './views/submissionsProvider';
 import { RankingsProvider } from './views/rankingsProvider';
 import { ProgrammingLanguage, LANGUAGE_CONFIG } from './models/models';
-import { createContestSpace } from './ContestSpaceManager';
+import { createContestSpace } from './services/contestSpaceManager';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed

@@ -53,7 +53,6 @@ export async function createContestSpace() {
         await vscode.window.showTextDocument(document);
 
         vscode.window.showInformationMessage(`成功创建比赛工作空间: ${contestId}`);
-
     } catch (error) {
         console.error('创建比赛工作空间失败:', error);
         vscode.window.showErrorMessage(`创建比赛工作空间失败: ${error instanceof Error ? error.message : String(error)}`);

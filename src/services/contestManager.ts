@@ -3,8 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { nowcoderService } from './nowcoderService';
 import { Problem, SubmissionStatus, ProgrammingLanguage, ProblemInfo, ProblemExtra, SubmissionListItem, SubmissionList } from '../models/models';
-import { ContestConfigurationService } from './ContestConfigurationService';
-import { ProblemItem } from '../views/problemsProvider';
+import { ContestConfigurationService } from './contestConfigurationService';
 
 /**
  * 管理NowCoder比赛、题目和提交
