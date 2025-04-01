@@ -79,11 +79,12 @@ export class ContestManager {
 
         if (noCache || !config.problems || config.problems.length === 0) {
             // 如果没有题目缓存，尝试刷新题目列表
-            const problemList = await nowcoderService.getProblemList(config.contestId);
-            if (!problemList) {
-                vscode.window.showErrorMessage('获取题目列表失败，请检查网络连接');
+            const problemListResult = await nowcoderService.getProblemList(config.contestId);
+            if (!problemListResult.success) {
+                vscode.window.showErrorMessage(`获取题目列表失败: ${problemListResult.error}`);
                 return null;
             }
+            const problemList = problemListResult.data!;
 
             config.problems = problemList.data.map((info: ProblemInfo) => {
                 const problem: Problem = {
@@ -121,13 +122,13 @@ export class ContestManager {
             return problem.extra;
         }
 
-        const extra = await nowcoderService.getProblemExtra(config.contestId, index);
-        if (!extra) {
-            vscode.window.showErrorMessage(`获取题目"${index}"详情失败`);
+        const extraResult = await nowcoderService.getProblemExtra(config.contestId, index);
+        if (!extraResult.success) {
+            vscode.window.showErrorMessage(`获取题目"${index}"详情失败：${extraResult.error}`);
             return null;
         }
 
-        problem.extra = extra;
+        problem.extra = extraResult.data!;
         await this.configService.save();
         this._onProblemsUpdated.fire(config.problems!);
         return problem.extra;
@@ -230,7 +231,7 @@ export class ContestManager {
 
         try {
             // 提交代码
-            const response = await nowcoderService.submitSolution(
+            const responseResult = await nowcoderService.submitSolution(
                 problem.extra.questionId,
                 problem.extra.tagId,
                 problem.extra.subTagId,
@@ -239,82 +240,80 @@ export class ContestManager {
                 language
             );
 
-            if (!response) {
-                vscode.window.showErrorMessage('提交失败，请检查网络连接');
+            if (!responseResult.success) {
+                vscode.window.showErrorMessage(`提交失败：${responseResult.error}`);
                 return false;
             }
 
-            if (response.code === 0 && response.data) {
-                const extra = problem.extra;
-                // 轮询判题结果
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: `提交中: ${problem.info.index} - ${problem.info.title}`,
-                    cancellable: false
-                }, async (progress) => {
-                    let isComplete = false;
-                    let count = 0;
-
-                    while (!isComplete && count < 60) {
-                        // 每秒查询一次，最多60秒
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        count++;
-
-                        progress.report({ message: `${count}秒... 检查判题结果中` });
-
-                        try {
-                            const status = await nowcoderService.getSubmissionStatus(
-                                response.data,
-                                extra.tagId.toString(),
-                                extra.subTagId
-                            );
-
-                            if (!status) {
-                                vscode.window.showErrorMessage('获取判题结果失败，请检查网络连接');
-                                return false;
-                            }
-
-                            // 判断是否完成
-                            if (status.status !== 0) { // 0表示"等待判题"
-                                isComplete = true;
-
-                                // 显示结果
-                                if (status.status === 5) { // 5表示"答案正确"
-                                    vscode.window.showInformationMessage(`提交成功: ${status.judgeReplyDesc}`);
-                                } else {
-                                    vscode.window.showErrorMessage(`提交结果: ${status.judgeReplyDesc}\n${status.desc}`);
-
-                                    // 如果是编译错误，显示错误消息
-                                    if (status.status === 12 && status.memo) {
-                                        vscode.window.showErrorMessage(`编译错误: ${status.memo}`);
-                                    }
-                                }
-
-                                // 提交完成后，触发提交状态变更事件以刷新提交列表
-                                this._onSubmissionStatusChanged.fire(status);
-                                
-                                // 不使用缓存获取提交记录，然后刷新
-                                await this.getSubmissions(true);
-
-                                return true;
-                            }
-                        } catch (error) {
-                            console.error('Failed to get submission status:', error);
-                        }
-                    }
-
-                    if (!isComplete) {
-                        vscode.window.showWarningMessage('获取判题结果超时，请前往牛客查看结果');
-                    }
-
-                    return true;
-                });
-
-                return true;
-            } else {
+            const response = responseResult.data!;
+            if (response.code !== 0) {
                 vscode.window.showErrorMessage(`提交失败: ${response.msg}`);
                 return false;
             }
+
+            const submissionId = responseResult.data!.data;
+            const extra = problem.extra;
+            // 轮询判题结果
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: `判题中: ${problem.info.index} - ${problem.info.title}`,
+                cancellable: false
+            }, async (progress) => {
+                let isComplete = false;
+                let count = 0;
+
+                while (!isComplete && count < 60) {
+                    // 每秒查询一次，最多60秒
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    count++;
+
+                    progress.report({ message: `${count}秒... 检查判题结果中` });
+
+                    const statusResult = await nowcoderService.getSubmissionStatus(
+                        submissionId,
+                        extra.tagId.toString(),
+                        extra.subTagId
+                    );
+
+                    if (!statusResult.success) {
+                        vscode.window.showErrorMessage(`获取判题状态失败: ${statusResult.error}`);
+                        continue;
+                    }
+
+                    const status = statusResult.data!;
+                    if (status.status === 0) { // 0表示"等待判题"
+                        continue;
+                    }
+
+                    isComplete = true;
+                    if (status.status === 5) { // 5表示"答案正确"
+                        vscode.window.showInformationMessage(`判题成功: ${status.judgeReplyDesc}`);
+                    } else {
+                        vscode.window.showWarningMessage(`提交结果: ${status.judgeReplyDesc}\n${status.desc}`);
+
+                        // 如果是编译错误，显示错误消息
+                        if (status.status === 12) {
+                            vscode.window.showErrorMessage(`编译错误: ${status.memo}`);
+                        }
+                    }
+
+                    // 提交完成后，触发提交状态变更事件以刷新提交列表
+                    this._onSubmissionStatusChanged.fire(status);
+                    
+                    // 不使用缓存获取提交记录，然后刷新
+                    await this.getSubmissions(true);
+
+                    return true;
+                }
+
+                if (!isComplete) {
+                    vscode.window.showWarningMessage('获取判题结果超时，请前往牛客查看结果');
+                }
+
+                return true;
+            });
+
+            return true;
         } catch (error) {
             console.error('Failed to submit solution:', error);
             vscode.window.showErrorMessage(`提交失败: ${(error as Error).message}`);
@@ -334,12 +333,12 @@ export class ContestManager {
         }
 
         if (noCache || !this.submissionsCache) {
-            const submissions = await nowcoderService.getSubmissions(config.contestId);
-            if (!submissions) {
-                vscode.window.showErrorMessage('获取提交记录失败，请检查网络连接');
+            const submissionsResult = await nowcoderService.getSubmissions(config.contestId);
+            if (!submissionsResult.success) {
+                vscode.window.showErrorMessage(`获取提交记录失败: ${submissionsResult.error}`);
                 return null;
             }
-            this.submissionsCache = submissions.data;
+            this.submissionsCache = submissionsResult.data!.data;
             this._onSubmissionsUpdated.fire(this.submissionsCache);
         }
 

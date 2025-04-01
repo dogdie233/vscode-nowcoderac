@@ -13,6 +13,42 @@ export interface Response<T> {
 }
 
 /**
+ * 通用结果包装类型
+ */
+export interface ApiResult<T> {
+    data: T | null;
+    error?: string;
+    success: boolean;
+}
+
+/**
+ * Result工厂方法
+ */
+export const ApiResult = {
+    /**
+     * 创建成功结果
+     */
+    success<T>(data: T): ApiResult<T> {
+        return {
+            success: true,
+            data,
+            error: undefined
+        };
+    },
+
+    /**
+     * 创建失败结果
+     */
+    failure<T>(error: string): ApiResult<T> {
+        return {
+            success: false,
+            data: null,
+            error
+        };
+    }
+};
+
+/**
  * 比赛题目列表
  */
 export interface ContestProblemList {
