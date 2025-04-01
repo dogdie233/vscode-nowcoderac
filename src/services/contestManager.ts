@@ -66,6 +66,14 @@ export class ContestManager {
         }
     }
 
+    getContestFolderPath() : string | null {
+        const config = this.configService.getConfigPath();
+        if (!config || !fs.existsSync(config)) {
+            return null;
+        }
+        return path.dirname(this.configService.getConfigPath()!);
+    }
+
     /**
      * 获取题目列表，如果没有缓存则刷新（可能不包含extra信息）
      * @param noCache 是否不使用缓存

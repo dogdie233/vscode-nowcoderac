@@ -270,3 +270,21 @@ export enum SubmissionStatusCode {
     WRONG_ANSWER = 4,
     COMPILE_ERROR = 12
 }
+
+export interface CphProb {
+    name: string;
+    url: string;
+    tests: CphTest[];
+    interactive: boolean;
+    memoryLimit: number;
+    timeLimit: number;
+    srcPath: string;
+    group: string;
+    local: boolean;
+}
+
+export interface CphTest {
+    id: number;
+    input: string;
+    output: string;
+}
