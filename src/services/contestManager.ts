@@ -300,6 +300,9 @@ export class ContestManager {
                     // 提交完成后，触发提交状态变更事件以刷新提交列表
                     this._onSubmissionStatusChanged.fire(status);
                     
+                    // 刷新题目列表，包含了通过率和通过状态
+                    await this.getProblems(true);
+
                     // 不使用缓存获取提交记录，然后刷新
                     await this.getSubmissions(true);
 
