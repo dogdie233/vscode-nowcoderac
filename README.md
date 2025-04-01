@@ -1,71 +1,37 @@
-# nowcoderac README
+# NowcoderAC for Visual Studio Code
 
-This is the README for your extension "nowcoderac". After writing up a brief description, we recommend including the following sections.
+你甚至可以在vsc里看题，做题，交题
 
-## Features
+> [!WARNING]
+> 此插件处于刚刚开发阶段，还存在巨量的bug以及非人类的操作逻辑，慎用
+> 可能发生的事情包括但不限于
+> 
+>  - 交上去的代码是另一个编辑器那样的
+>  - 选了Python但交上去了C++
+>  - 把题面从html转换回markdown的时候炸了，导致漏掉了某些信息
+>  - 被封号
+>  - 弹出一些让人一脸懵逼的报错
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## 功能
 
-For example if there is an image subfolder under your extension project workspace:
+ - [x] 看题
+ - [x] 交题
+ - [x] 巨量的bug
+ - [ ] 看榜
+ - [ ] 赛时计时器
+ - [ ] 弹出赛时公告
 
-\!\[feature X\]\(images/feature-x.png\)
+## 使用教程
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+ 1. 安装扩展
+ 2. 打开命令面板搜索 `创建比赛工作空间`
+ 3. 输入比赛id（例如 `https://ac.nowcoder.com/acm/contest/106509` 的比赛id是 `106509`）
+ 4. 选择比赛代码文件夹的位置（如果选择 `./nowcoder` 作为目录，则会创建比赛文件夹在 `./nowcoder/106509`，题目文件都会在里面）
+ 5. 这个时候应该会叫你登录，选择allow，之后会弹出一个输入框
+ 6. 打开浏览器，进入 `https://ac.nowcoder.com` 牛客竞赛官网，**登录之后**按下`F12`，打开开发者工具，
+ 7. 点击弹出的窗口中toolbox中的`console`，粘贴以下命令 `document.cookie.split('; ').find(row => row.startsWith('t=')).split('=')[1];` （如果粘贴的时候弹出一个黄色的警告不让你粘贴你就手动输入 `allow pasting` 回车之后再粘贴）
+ 8. 之后会返回一串字符串，复制他(补药复制引号)，回到vsc，粘贴到弹出来的输入框里，按回车
+ 9. 在左侧activityBar里找到牛客竞赛，点进去之后就是这场比赛的题目和你的提交记录了(∠・ω< )⌒☆
 
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+## 界面介绍
+![界面各个按钮的用途](images/ExplorerUsage.png)
