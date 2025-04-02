@@ -164,8 +164,8 @@ export interface SubmissionList {
  * 提交列表项目
  */
 export interface SubmissionListItem {
-    memory: number;
-    length: number;
+    memory?: number;
+    length?: number;
     index: string;
     languageCategoryName: string;
     language: string;
@@ -177,7 +177,7 @@ export interface SubmissionListItem {
     statusMessage: string;
     submissionId: number;
     submitTime: number;
-    time: number;
+    time?: number;
     problemId: number;
 }
 

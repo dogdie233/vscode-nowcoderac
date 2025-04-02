@@ -11,6 +11,9 @@ export class SubmissionsProvider implements vscode.TreeDataProvider<SubmissionIt
         contestManager.onSubmissionStatusChanged(() => {
             this.refresh();
         });
+        contestManager.onSubmissionsUpdated(() => {
+            this.refresh();
+        });
     }
     
     refresh(): void {
@@ -47,7 +50,7 @@ export class SubmissionItem extends vscode.TreeItem {
             vscode.TreeItemCollapsibleState.None
         );
         
-        const submitTime = new Date(submission.submitTime * 1000);
+        const submitTime = new Date(submission.submitTime);
         const formattedTime = submitTime.toLocaleString('zh-CN', {
             year: 'numeric',
             month: '2-digit',
@@ -58,12 +61,12 @@ export class SubmissionItem extends vscode.TreeItem {
         }).replace(/\//g, '-').replace(/,/, '');
 
         this.tooltip = `状态: ${submission.statusMessage}
-运行时间: ${submission.time}ms
-内存: ${submission.memory}KB
+运行时间: ${submission.time ?? '---'}ms
+内存: ${submission.memory ?? '---'}KB
 语言: ${submission.languageName}
 提交时间: ${formattedTime}`;
         
-        this.description = `语言:${submission.language} | 时间:${submission.time}ms | 内存:${submission.memory}KB | ${submission.submitTime}`;
+        this.description = `语言:${submission.language} | 时间:${submission.time ?? '---'}ms | 内存:${submission.memory ?? '---'}KB | ${formattedTime}`;
         
         this.contextValue = 'submission';
         

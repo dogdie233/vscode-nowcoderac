@@ -28,6 +28,10 @@ export class ContestConfigurationService {
             this.config = null;
             return null;
         }
+
+        if (!fs.existsSync(configPath)) {
+            return null;
+        }
         
         try {
             const configContent = fs.readFileSync(configPath, 'utf-8');

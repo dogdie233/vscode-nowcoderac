@@ -1,8 +1,14 @@
 {
   "name": "nowcoderac",
   "displayName": "NowCoderAC",
-  "description": "Solve problems in VSCode fully",
-  "version": "0.0.1",
+  "description": "Solve nowcoder contest problems in VSCode fully",
+  "version": "0.0.3",
+  "icon": "resources/icon.png",
+  "publisher": "dogdie233",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dogdie233/vscode-nowcoderac.git"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -65,7 +71,7 @@
         {
           "id": "nowcoderac-explorer",
           "title": "牛客竞赛",
-          "icon": "resources/b_a1480ce5a5bc9f36ecad245ab6cb8f05.png"
+          "icon": "resources/icon.png"
         }
       ]
     },
@@ -130,7 +136,6 @@
     "lint": "eslint src"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.4",
     "@types/cheerio": "^0.22.35",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
