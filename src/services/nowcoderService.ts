@@ -1,6 +1,6 @@
 import { httpClient } from './httpClient';
 import { HtmlParser } from '../utils/htmlParser';
-import { SubmissionResponse, SubmissionStatus, ProgrammingLanguage, LANGUAGE_CONFIG, ProblemExtra, SubmissionListItem, ContestProblemList, Response, SubmissionList, ApiResult } from '../models/models';
+import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG, ProblemExtra, SubmissionListItem, ContestProblemList, Response, SubmissionList, ApiResult } from '../models/models';
 
 /**
  * NowCoder服务，封装与NowCoder平台的API交互
@@ -55,7 +55,7 @@ export class NowcoderService {
      * @param subTagId 子标签ID
      * @param doneQuestionId 完成的题目ID
      * @param content 代码内容
-     * @param language 编程语言
+     * @param compiler 编译器
      * @returns 提交响应
      */
     async submitSolution(
@@ -64,11 +64,11 @@ export class NowcoderService {
         subTagId: string, 
         doneQuestionId: string, 
         content: string, 
-        language: ProgrammingLanguage
+        compiler: NowcoderCompiler
     ): Promise<ApiResult<SubmissionResponse>> {
         try {
             const url = `${NowcoderService.BASE_URL}/nccommon/submit_cd`;
-            const languageConfig = LANGUAGE_CONFIG[language];
+            const languageConfig = COMPILER_CONFIG[compiler];
             
             const formData = {
                 questionId,

@@ -192,7 +192,7 @@ export interface NowCoderConfig {
 /**
  * 支持的编程语言
  */
-export enum ProgrammingLanguage {
+export enum NowcoderCompiler {
     CPP_CLANG = '2',
     CPP_GCC = '38',
     C_GCC = '39',
@@ -224,41 +224,44 @@ export enum ProgrammingLanguage {
 /**
  * 语言配置
  */
-export interface LanguageConfig {
+export interface CompilerConfig {
     id: string;
     name: string;
+    ext: string;
+    commentToken: string;
+    languageId: string;
 }
 
 /**
  * 语言配置映射
  */
-export const LANGUAGE_CONFIG: Record<ProgrammingLanguage, LanguageConfig> = {
-    [ProgrammingLanguage.CPP_CLANG]: { id: '2', name: 'C++（clang++18）' },
-    [ProgrammingLanguage.CPP_GCC]: { id: '38', name: 'C++(g++ 13)' },
-    [ProgrammingLanguage.C_GCC]: { id: '39', name: 'C(gcc 10)' },
-    [ProgrammingLanguage.JAVA]: { id: '4', name: 'Java' },
-    [ProgrammingLanguage.C]: { id: '1', name: 'C' },
-    [ProgrammingLanguage.PYTHON2]: { id: '5', name: 'Python2' },
-    [ProgrammingLanguage.PYTHON3]: { id: '11', name: 'Python3' },
-    [ProgrammingLanguage.PYPY2]: { id: '24', name: 'pypy2' },
-    [ProgrammingLanguage.PYPY3]: { id: '25', name: 'pypy3' },
-    [ProgrammingLanguage.CSHARP]: { id: '9', name: 'C#' },
-    [ProgrammingLanguage.PHP]: { id: '8', name: 'PHP' },
-    [ProgrammingLanguage.JAVASCRIPT_V8]: { id: '14', name: 'JavaScript V8' },
-    [ProgrammingLanguage.JAVASCRIPT_NODE]: { id: '13', name: 'JavaScript Node' },
-    [ProgrammingLanguage.R]: { id: '16', name: 'R' },
-    [ProgrammingLanguage.GO]: { id: '17', name: 'Go' },
-    [ProgrammingLanguage.RUBY]: { id: '19', name: 'Ruby' },
-    [ProgrammingLanguage.RUST]: { id: '27', name: 'Rust' },
-    [ProgrammingLanguage.SWIFT]: { id: '20', name: 'Swift' },
-    [ProgrammingLanguage.OBJC]: { id: '10', name: 'ObjC' },
-    [ProgrammingLanguage.PASCAL]: { id: '3', name: 'Pascal' },
-    [ProgrammingLanguage.MATLAB]: { id: '21', name: 'matlab' },
-    [ProgrammingLanguage.BASH]: { id: '23', name: 'bash' },
-    [ProgrammingLanguage.SCALA]: { id: '28', name: 'Scala' },
-    [ProgrammingLanguage.KOTLIN]: { id: '29', name: 'Kotlin' },
-    [ProgrammingLanguage.GROOVY]: { id: '30', name: 'Groovy' },
-    [ProgrammingLanguage.TYPESCRIPT]: { id: '31', name: 'TypeScript' }
+export const COMPILER_CONFIG: Record<NowcoderCompiler, CompilerConfig> = {
+    [NowcoderCompiler.CPP_CLANG]: { id: '2', name: 'C++（clang++18）', ext: 'cpp', commentToken: '//', languageId: 'cpp' },
+    [NowcoderCompiler.CPP_GCC]: { id: '38', name: 'C++(g++ 13)', ext: 'cpp', commentToken: '//', languageId: 'cpp' },
+    [NowcoderCompiler.C_GCC]: { id: '39', name: 'C(gcc 10)', ext: 'c', commentToken: '//', languageId: 'c' },
+    [NowcoderCompiler.JAVA]: { id: '4', name: 'Java', ext: 'java', commentToken: '//', languageId: 'java' },
+    [NowcoderCompiler.C]: { id: '1', name: 'C', ext: 'c', commentToken: '//', languageId: 'c' },
+    [NowcoderCompiler.PYTHON2]: { id: '5', name: 'Python2', ext: 'py', commentToken: '#', languageId: 'python' },
+    [NowcoderCompiler.PYTHON3]: { id: '11', name: 'Python3', ext: 'py', commentToken: '#', languageId: 'python' },
+    [NowcoderCompiler.PYPY2]: { id: '24', name: 'pypy2', ext: 'py', commentToken: '#', languageId: 'python' },
+    [NowcoderCompiler.PYPY3]: { id: '25', name: 'pypy3', ext: 'py', commentToken: '#', languageId: 'python' },
+    [NowcoderCompiler.CSHARP]: { id: '9', name: 'C#', ext: 'cs', commentToken: '//', languageId: 'csharp' },
+    [NowcoderCompiler.PHP]: { id: '8', name: 'PHP', ext: 'php', commentToken: '//', languageId: 'php' },
+    [NowcoderCompiler.JAVASCRIPT_V8]: { id: '14', name: 'JavaScript V8', ext: 'js', commentToken: '//', languageId: 'javascript' },
+    [NowcoderCompiler.JAVASCRIPT_NODE]: { id: '13', name: 'JavaScript Node', ext: 'js', commentToken: '//', languageId: 'javascript' },
+    [NowcoderCompiler.R]: { id: '16', name: 'R', ext: 'r', commentToken: '#', languageId: 'r' },
+    [NowcoderCompiler.GO]: { id: '17', name: 'Go', ext: 'go', commentToken: '//', languageId: 'go' },
+    [NowcoderCompiler.RUBY]: { id: '19', name: 'Ruby', ext: 'rb', commentToken: '#', languageId: 'ruby' },
+    [NowcoderCompiler.RUST]: { id: '27', name: 'Rust', ext: 'rs', commentToken: '//', languageId: 'rust' },
+    [NowcoderCompiler.SWIFT]: { id: '20', name: 'Swift', ext: 'swift', commentToken: '//', languageId: 'swift' },
+    [NowcoderCompiler.OBJC]: { id: '10', name: 'ObjC', ext: 'm', commentToken: '//', languageId: 'objectivec' },
+    [NowcoderCompiler.PASCAL]: { id: '3', name: 'Pascal', ext: 'pas', commentToken: '//', languageId: 'pascal' },
+    [NowcoderCompiler.MATLAB]: { id: '21', name: 'matlab', ext: 'm', commentToken: '%', languageId: 'matlab' },
+    [NowcoderCompiler.BASH]: { id: '23', name: 'bash', ext: 'sh', commentToken: '#', languageId: 'shellscript' },
+    [NowcoderCompiler.SCALA]: { id: '28', name: 'Scala', ext: 'scala', commentToken: '//', languageId: 'scala' },
+    [NowcoderCompiler.KOTLIN]: { id: '29', name: 'Kotlin', ext: 'kt', commentToken: '//', languageId: 'kotlin' },
+    [NowcoderCompiler.GROOVY]: { id: '30', name: 'Groovy', ext: 'groovy', commentToken: '//', languageId: 'groovy' },
+    [NowcoderCompiler.TYPESCRIPT]: { id: '31', name: 'TypeScript', ext: 'ts', commentToken: '//', languageId: 'typescript' }
 };
 
 /**
@@ -269,4 +272,35 @@ export enum SubmissionStatusCode {
     RIGHT_ANSWER = 5,
     WRONG_ANSWER = 4,
     COMPILE_ERROR = 12
+}
+
+export interface CphProb {
+    name: string;
+    url: string;
+    tests: CphTest[];
+    interactive: boolean;
+    memoryLimit: number;
+    timeLimit: number;
+    srcPath: string;
+    group: string;
+    local: boolean;
+}
+
+export interface CphTest {
+    id: number;
+    input: string;
+    output: string;
+}
+
+export enum CphSupportedLanguage {
+    C = 'C',
+    CPP = 'CPP_CLANG',
+    CSHARP = 'CSHARP',
+    RUST = 'RUST',
+    GO = 'GO',
+    HASKELL = 'HASKELL',
+    PYTHON = 'PYTHON3',
+    RUBY = 'RUBY',
+    JAVA = 'JAVA',
+    JAVASCRIPT = 'JAVASCRIPT_NODE'
 }

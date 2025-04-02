@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { nowcoderService } from './nowcoderService';
-import { Problem, SubmissionStatus, ProgrammingLanguage, ProblemInfo, ProblemExtra, SubmissionListItem, SubmissionList } from '../models/models';
+import { Problem, SubmissionStatus, NowcoderCompiler, ProblemInfo, ProblemExtra, SubmissionListItem, SubmissionList, COMPILER_CONFIG } from '../models/models';
 import { ContestConfigurationService } from './contestConfigurationService';
+import { CphService } from './cphService';
 
 /**
  * 管理NowCoder比赛、题目和提交
@@ -20,6 +21,7 @@ export class ContestManager {
 
     private configService: ContestConfigurationService;
     private submissionsCache: SubmissionListItem[] | undefined = [];
+    private readonly cphService: CphService;
 
     constructor(private context: vscode.ExtensionContext) {
         this.configService = new ContestConfigurationService();
@@ -31,6 +33,7 @@ export class ContestManager {
         if (vscode.window.activeTextEditor) {
             this.handleActiveEditorChange(vscode.window.activeTextEditor);
         }
+        this.cphService = new CphService(this);
     }
 
     /**
@@ -64,6 +67,14 @@ export class ContestManager {
             this._onProblemsUpdated.fire(undefined); // 清空题目列表
             this._onSubmissionsUpdated.fire(undefined);  // 清空提交记录
         }
+    }
+
+    getContestFolderPath() : string | null {
+        const config = this.configService.getConfigPath();
+        if (!config || !fs.existsSync(config)) {
+            return null;
+        }
+        return fs.realpathSync(path.dirname(this.configService.getConfigPath()!));
     }
 
     /**
@@ -200,11 +211,49 @@ export class ContestManager {
     }
 
     /**
-     * 提交解答
+     * 生成代码文件
      * @param problem 题目
-     * @param language 编程语言
+     * @param compiler 编程语言
+     * @param generateCphProb 是否生成cph prob文件
+     * @returns 代码文件路径，如果失败则是null
      */
-    async submitSolution(problem: Problem, language: ProgrammingLanguage): Promise<boolean> {
+    async createCodeFile(problem: Problem, compiler: NowcoderCompiler, generateCphProb: boolean) : Promise<string | null> {
+        const contestFolderPath = this.getContestFolderPath();
+        if (!contestFolderPath) {
+            vscode.window.showErrorMessage('没有配置文件，先打开一场比赛');
+            return null;
+        }
+
+        const compilerInfo = COMPILER_CONFIG[compiler];
+        const fileName = `${problem.info.index}.${compilerInfo.ext}`;
+        const filePath = path.join(contestFolderPath, fileName);
+        const compilerMarkText = COMPILER_CONFIG[compiler].commentToken + ' Nowcoder Compiler: ' + COMPILER_CONFIG[compiler].name + '\n';
+        
+        fs.mkdirSync(contestFolderPath, { recursive: true });
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, compilerMarkText, 'utf-8');
+        }
+
+        if (generateCphProb && !this.cphService.readExistingProb(fileName)) {
+            console.info('Creating prob file...');
+            const prob = this.cphService.createProb(fileName, problem);
+            if (prob) {
+                this.cphService.saveProb(fileName, prob);
+            } else {
+                console.error('Failed to create prob file');
+            }
+        }
+
+        return filePath;
+    }
+
+    /**
+     * 提交解答
+     * @param code 代码
+     * @param problem 题目
+     * @param compiler 编程语言
+     */
+    async submitSolution(code: string, problem: Problem, compiler: NowcoderCompiler): Promise<boolean> {
         if (!problem.extra) {
             const extra = await this.getProblemExtra(problem.info.index);
             if (!extra) {
@@ -216,19 +265,6 @@ export class ContestManager {
             this._onProblemsUpdated.fire(this.configService.getConfig()?.problems || []);
         }
 
-        // 获取当前编辑器中的代码
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showErrorMessage('请先打开代码文件');
-            return false;
-        }
-
-        const code = editor.document.getText();
-        if (!code.trim()) {
-            vscode.window.showErrorMessage('代码不能为空');
-            return false;
-        }
-
         try {
             // 提交代码
             const responseResult = await nowcoderService.submitSolution(
@@ -237,7 +273,7 @@ export class ContestManager {
                 problem.extra.subTagId,
                 problem.extra.doneQuestionId,
                 code,
-                language
+                compiler
             );
 
             if (!responseResult.success) {
