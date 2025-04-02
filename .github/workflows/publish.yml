@@ -95,17 +95,6 @@ jobs:
         with:
           name: ${{ needs.package.outputs.packageName }}
 
-      - name: Create Release
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ needs.package.outputs.tag }}
-          release_name: Release ${{ needs.package.outputs.version }}
-          draft: false
-          prerelease: false
-
       - name: Upload assets to a Release
         uses: AButler/upload-release-assets@v2.0
         with:
