@@ -1,9 +1,38 @@
 # Change Log
 
-All notable changes to the "nowcoderac" extension will be documented in this file.
+All notable changes to the extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## Version 0.0.4
 
-## [Unreleased]
+### Enhancements
 
-- Initial release
+ - 创建代码文件
+ - 联动Cph创建Prob文件
+
+### Bug Fixes
+
+
+
+## Version 0.0.3
+
+### Enhancements
+
+ - 添加了插件图标
+ - 补充了描述
+
+### Bug Fixes
+
+
+
+## Version 0.0.2
+
+### Enhancements
+
+ - 创建比赛工作空间
+ - 查看本场比赛题目
+ - 查看题目提交状态
+ - 提交代码
+ - 显示判题结果
+ - 查看个人在本场比赛中的所有提交
+
+### Bug Fixes
