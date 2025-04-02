@@ -1,6 +1,9 @@
 # ignore vscode settings for extension development
 .vscode/**
 
+# ignore github workflows and actions
+.github/**
+
 # ignore binaries
 obj/**
 
@@ -33,6 +36,7 @@ test.tsconfig.json
 ui.tsconfig.json
 tslint.json
 .eslintrc.js
+.eslint.config.mjs
 webpack.config.js
 tscCompileList.txt
 gulpfile.js
