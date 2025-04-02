@@ -1,13 +1,15 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { NowCoderAuthenticationProvider } from './nowCoderAuthenticationProvider';
+import { NowCoderAuthenticationProvider } from './nowcoderAuthenticationProvider';
 import { getContestManager } from './services/contestManager';
 import { ProblemsProvider, ProblemItem } from './views/problemsProvider';
 import { SubmissionsProvider } from './views/submissionsProvider';
 import { RankingsProvider } from './views/rankingsProvider';
-import { ProgrammingLanguage, LANGUAGE_CONFIG } from './models/models';
+import { NowcoderCompiler, COMPILER_CONFIG } from './models/models';
 import { createContestSpace } from './services/contestSpaceManager';
+import { UserInteractiveHelper } from './utils/userInteractiveHelper';
+import { CodeHelper } from './utils/codeHelper';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -78,6 +80,23 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
     context.subscriptions.push(openProblemDisposable);
+
+    // 创建代码文件命令
+    const createCodeFileDisposable = vscode.commands.registerCommand('nowcoderac.createCodeFile', async (problemItem: ProblemItem) => {
+        if (problemItem) {
+            const compiler = await UserInteractiveHelper.askCompiler();
+            if (!compiler) {
+                return;
+            }
+            const filePath = await contestManager.createCodeFile(problemItem.problem, compiler, true);
+            if (filePath) {
+                await vscode.window.showTextDocument(vscode.Uri.file(filePath), {
+                    preview: false
+                });
+            }
+        }
+    });
+    context.subscriptions.push(createCodeFileDisposable);
     
     // 提交解答命令
     const submitSolutionDisposable = vscode.commands.registerCommand('nowcoderac.submitSolution', async (problemItem: ProblemItem) => {
@@ -85,24 +104,19 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
         
-        // 选择编程语言
-        const languageOptions = Object.entries(LANGUAGE_CONFIG).map(([key, value]) => {
-            return { 
-                label: value.name, 
-                value: key 
-            };
-        });
-        
-        const selectedLanguage = await vscode.window.showQuickPick(
-            languageOptions,
-            { placeHolder: '请选择编程语言' }
-        );
-        
-        if (!selectedLanguage) {
+        const document = vscode.window.activeTextEditor?.document;
+        const code = document?.getText();
+        if (!document || !code) {
+            vscode.window.showErrorMessage("当前没有打开的代码文件或代码为空，请先创建代码文件。");
+            return;
+        }
+
+        const compiler = CodeHelper.tryParseComplierInCode(code, document.languageId) ?? await UserInteractiveHelper.askCompiler();
+        if (!compiler) {
             return;
         }
         
-        await contestManager.submitSolution(problemItem.problem, selectedLanguage.value as ProgrammingLanguage);
+        await contestManager.submitSolution(code, problemItem.problem, compiler);
     });
     context.subscriptions.push(submitSolutionDisposable);
     
