@@ -41,7 +41,7 @@ jobs:
 
       - name: Setup package path
         id: setup
-        run: echo "::set-output name=packageName::$(node -e "console.log(require('./package.json').name + '-' + require('./package.json').version + '.vsix')")"
+        run: echo "packageName=$(node -e "console.log(require('./package.json').name + '-' + require('./package.json').version + '.vsix')")" >> $GITHUB_OUTPUT
 
       - name: Package
         run: |
@@ -58,15 +58,14 @@ jobs:
         run: |
           $version = (Get-Content ./package.json -Raw | ConvertFrom-Json).version
           Write-Host "tag: release/$version"
-          Write-Host "::set-output name=tag::release/$version"
-          Write-Host "::set-output name=version::$version"
+          "tag=release/$version" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
   publishMS:
     name: Publish to VS marketplace
     runs-on: ubuntu-latest
     needs: package
-    if: github.event.inputs.publishMS == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -79,7 +78,6 @@ jobs:
     name: Publish to Open VSX
     runs-on: ubuntu-latest
     needs: package
-    if: github.event.inputs.publishOVSX == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -92,7 +90,6 @@ jobs:
     name: Publish to GitHub releases
     runs-on: ubuntu-latest
     needs: package
-    if: github.event.inputs.publishGH == 'true'
     steps:
       - uses: actions/download-artifact@v2
         with:
