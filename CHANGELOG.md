@@ -2,6 +2,14 @@
 
 All notable changes to the extension will be documented in this file.
 
+## Version 0.1.0
+
+### Enhancements
+
+### Bug Fixes
+
+ - 修复插件加载失败
+
 ## Version 0.0.4
 
 ### Enhancements
