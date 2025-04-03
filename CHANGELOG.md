@@ -2,6 +2,16 @@
 
 All notable changes to the extension will be documented in this file.
 
+## Version 0.1.1
+
+### Enhancements
+
+ - 如果cph设置了SaveLocation，现在会把prob文件存到指定位置了
+
+### Bug Fixes
+
+无
+
 ## Version 0.1.0
 
 ### Enhancements
