@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import { CphProb, CphTest, Problem } from "../models/models";
 import { ContestManager } from "./contestManager";
+import { getCphSaveLocationPref } from "../utils/perferenceHelper";
 
 export class CphService {
     private contestManager: ContestManager;
@@ -29,7 +30,12 @@ export class CphService {
             .digest('hex')
             .substr(0);
         const baseProbName = `.${srcFileName}_${hash}.prob`;
-        const cphFolder = path.join(contestPath, '.cph');
+        var cphSaveLocation = getCphSaveLocationPref();
+        if (cphSaveLocation === '') {
+            cphSaveLocation = undefined;
+        }
+
+        const cphFolder = cphSaveLocation ?? path.join(contestPath, '.cph');
         return path.join(cphFolder, baseProbName);
     }
 
