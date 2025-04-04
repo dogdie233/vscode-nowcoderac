@@ -1,6 +1,6 @@
 import { httpClient } from './httpClient';
 import { HtmlParser } from '../utils/htmlParser';
-import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG, ProblemExtra, SubmissionListItem, ContestProblemList, Response, SubmissionList, ApiResult } from '../models/models';
+import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG, ProblemExtra, SubmissionListItem, ContestProblemList, Response, SubmissionList, ApiResult, RealtimeRank } from '../models/models';
 
 /**
  * NowCoder服务，封装与NowCoder平台的API交互
@@ -124,6 +124,21 @@ export class NowcoderService {
             }
         } catch (error) {
             console.error('Error fetching submissions:', error);
+            return ApiResult.failure('网络错误: ' + (error instanceof Error ? error.message : String(error)));
+        }
+    }
+
+    async getRealtimeRank(contestId: number, page: number = 1): Promise<ApiResult<RealtimeRank>> {
+        try {
+            const url = `${NowcoderService.BASE_URL}/acm-heavy/acm/contest/real-time-rank-data?id=${contestId}&page=${page}`;
+            const response = await httpClient.get<Response<RealtimeRank>>(url);
+            if (response && response.code === 0 && response.data) {
+                return ApiResult.success(response.data);
+            }
+            console.error('Failed to get realtime rank:', response?.msg);
+            return ApiResult.failure(response?.msg || '未知错误');
+        } catch (error) {
+            console.error('Error fetching realtime rank:', error);
             return ApiResult.failure('网络错误: ' + (error instanceof Error ? error.message : String(error)));
         }
     }

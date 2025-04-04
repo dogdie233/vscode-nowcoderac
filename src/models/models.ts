@@ -304,3 +304,64 @@ export enum CphSupportedLanguage {
     JAVA = 'JAVA',
     JAVASCRIPT = 'JAVASCRIPT_NODE'
 }
+
+/**
+ * 实时排名接口
+ */
+export interface RealtimeRank {
+    myRankData: RankData;
+    problemData: ProblemRankData[];
+    rankData: RankData[];
+    isContestFinished: boolean;
+    basicInfo: RankBasicInfo;
+}
+
+export interface RankData {
+    acceptedCount: number;
+    colorLevel: number;
+    fullScore: number;
+    penaltyTime: number;
+    ranking: number;
+    school: string;
+    scoreList: ProblemScore[];
+    team: boolean;
+    totalScore: number;
+    uid: number;
+    userName: string;
+}
+
+export interface ProblemScore {
+    accepted: boolean;
+    acceptedTime: number;
+    failedCount: number;
+    finishJudge: boolean;
+    firstBlood: boolean;
+    fullScore: number;
+    problemId: number;
+    score: number;
+    submissionId: number;
+    submit: boolean;
+    timeConsumption: number;
+    waitingJudgeCount: number;
+}
+
+export interface ProblemRankData {
+    acceptedCount: number;
+    submitCount: number;
+    name: string;
+    problemId: number;
+}
+
+export interface RankBasicInfo {
+    rankCount: number;
+    basicUid: number;
+    contestId: number;
+    pageCount: number;
+    contestEndTime: number;
+    contestBeginTime: number;
+    rankType: string;
+    pageSize: number;
+    type: number;
+    searchUserName: string;
+    pageCurrent: number;
+}
