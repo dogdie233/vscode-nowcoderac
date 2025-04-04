@@ -128,9 +128,12 @@ export class NowcoderService {
         }
     }
 
-    async getRealtimeRank(contestId: number, page: number = 1): Promise<ApiResult<RealtimeRank>> {
+    async getRealtimeRank(contestId: number, page: number = 1, onlyMyFollow: boolean = false, searchUserName: string | undefined = undefined): Promise<ApiResult<RealtimeRank>> {
         try {
-            const url = `${NowcoderService.BASE_URL}/acm-heavy/acm/contest/real-time-rank-data?id=${contestId}&page=${page}`;
+            var url = `${NowcoderService.BASE_URL}/acm-heavy/acm/contest/real-time-rank-data?id=${contestId}&page=${page}&onlyMyFollow=${onlyMyFollow}`;
+            if (searchUserName) {
+                url += `&searchUserName=${encodeURIComponent(searchUserName)}`;
+            }
             const response = await httpClient.get<Response<RealtimeRank>>(url);
             if (response && response.code === 0 && response.data) {
                 return ApiResult.success(response.data);
