@@ -59,6 +59,8 @@ export class ContestManager {
         const config = await this.configService.load(potentialConfigPath);
 
         // 检查配置文件是否存在
+        this.submissionsCache = undefined;
+        this.realtimeRankCache = undefined;
         if (config) {
             this._onProblemsUpdated.fire(config.problems || undefined); // 更新题目列表
             this._onSubmissionsUpdated.fire([]);  // 之后获取提交记录
