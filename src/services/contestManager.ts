@@ -67,6 +67,7 @@ export class ContestManager {
             this._onProblemsUpdated.fire(undefined); // 清空题目列表
             this._onSubmissionsUpdated.fire(undefined);  // 清空提交记录
         }
+        this.submissionsCache = undefined;
     }
 
     getContestFolderPath() : string | null {
