@@ -64,6 +64,12 @@
         "title": "刷新提交列表",
         "icon": "$(refresh)",
         "category": "NowCoder"
+      },
+      {
+        "command": "nowcoderac.refreshRealtimeRank",
+        "title": "刷新实时排名",
+        "icon": "$(refresh)",
+        "category": "NowCoder"
       }
     ],
     "viewsContainers": {
@@ -101,6 +107,11 @@
         {
           "command": "nowcoderac.refreshSubmissionList",
           "when": "view == nowcoderac-submissions",
+          "group": "navigation"
+        },
+        {
+          "command": "nowcoderac.refreshRealtimeRank",
+          "when": "view == nowcoderac-rankings",
           "group": "navigation"
         }
       ],

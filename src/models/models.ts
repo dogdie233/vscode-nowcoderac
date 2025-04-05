@@ -309,7 +309,7 @@ export enum CphSupportedLanguage {
  * 实时排名接口
  */
 export interface RealtimeRank {
-    myRankData: RankData;
+    myRankData: RankData | null;
     problemData: ProblemRankData[];
     rankData: RankData[];
     isContestFinished: boolean;

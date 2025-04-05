@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
     // 初始化视图提供者
     const problemsProvider = new ProblemsProvider(contestManager);
     const submissionsProvider = new SubmissionsProvider(contestManager);
-    const rankingsProvider = new RankingsProvider();
+    const rankingsProvider = new RankingsProvider(contestManager);
     
     // 注册视图
     vscode.window.createTreeView('nowcoderac-problems', {
@@ -132,6 +132,18 @@ export function activate(context: vscode.ExtensionContext) {
             });
         })
     );
+
+    // 刷新排名命令
+    const refreshRankingsDisposable = vscode.commands.registerCommand('nowcoderac.refreshRealtimeRank', async () => {
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "正在刷新排名...",
+            cancellable: false
+        }, async () => {
+            await contestManager.getRealtimeRank(true);
+        });
+    });
+    context.subscriptions.push(refreshRankingsDisposable);
 
     // 注册创建比赛工作空间命令
     const createWorkspaceCommand = vscode.commands.registerCommand(

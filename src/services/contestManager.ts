@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { nowcoderService } from './nowcoderService';
-import { Problem, SubmissionStatus, NowcoderCompiler, ProblemInfo, ProblemExtra, SubmissionListItem, SubmissionList, COMPILER_CONFIG } from '../models/models';
+import { Problem, SubmissionStatus, NowcoderCompiler, ProblemInfo, ProblemExtra, SubmissionListItem, COMPILER_CONFIG, RealtimeRank } from '../models/models';
 import { ContestConfigurationService } from './contestConfigurationService';
 import { CphService } from './cphService';
 
@@ -13,14 +13,17 @@ export class ContestManager {
     private readonly _onProblemsUpdated = new vscode.EventEmitter<Problem[] | undefined>();
     private readonly _onSubmissionStatusChanged = new vscode.EventEmitter<SubmissionStatus>();
     private readonly _onSubmissionsUpdated = new vscode.EventEmitter<SubmissionListItem[] | undefined>();
+    private readonly _onRankUpdated = new vscode.EventEmitter<RealtimeRank | undefined>();
 
     // 公开事件
     readonly onProblemsUpdated = this._onProblemsUpdated.event;
     readonly onSubmissionStatusChanged = this._onSubmissionStatusChanged.event;
     readonly onSubmissionsUpdated = this._onSubmissionsUpdated.event;
+    readonly onRankUpdated = this._onRankUpdated.event;
 
     private configService: ContestConfigurationService;
     private submissionsCache: SubmissionListItem[] | undefined = [];
+    private realtimeRankCache: RealtimeRank | undefined = undefined;
     private readonly cphService: CphService;
 
     constructor(private context: vscode.ExtensionContext) {
@@ -67,6 +70,7 @@ export class ContestManager {
             this._onProblemsUpdated.fire(undefined); // 清空题目列表
             this._onSubmissionsUpdated.fire(undefined);  // 清空提交记录
         }
+        this._onRankUpdated.fire(undefined);
     }
 
     getContestFolderPath() : string | null {
@@ -382,6 +386,30 @@ export class ContestManager {
         }
 
         return this.submissionsCache;
+    }
+
+    /**
+     * 获取实时排名数据
+     * @param noCache 是否不使用缓存
+     * @returns 实时排名数据，如果失败则是null
+     */
+    async getRealtimeRank(noCache: boolean = false): Promise<RealtimeRank | null> {
+        const config = this.configService.getConfig();
+        if (!config || !config.contestId) {
+            return null;
+        }
+
+        if (noCache || !this.realtimeRankCache) {
+            const rankResult = await nowcoderService.getRealtimeRank(config.contestId);
+            if (!rankResult.success) {
+                vscode.window.showErrorMessage(`获取排名失败: ${rankResult.error}`);
+                return null;
+            }
+            this.realtimeRankCache = rankResult.data!;
+            this._onRankUpdated.fire(this.realtimeRankCache);
+        }
+
+        return this.realtimeRankCache;
     }
 }
 

@@ -130,7 +130,7 @@ export class NowcoderService {
 
     async getRealtimeRank(contestId: number, page: number = 1, onlyMyFollow: boolean = false, searchUserName: string | undefined = undefined): Promise<ApiResult<RealtimeRank>> {
         try {
-            var url = `${NowcoderService.BASE_URL}/acm-heavy/acm/contest/real-time-rank-data?id=${contestId}&page=${page}&onlyMyFollow=${onlyMyFollow}`;
+            var url = `${NowcoderService.BASE_URL}/acm-heavy/acm/contest/real-time-rank-data?id=${contestId}&page=${page}&onlyMyFollow=${onlyMyFollow}&limit=0`;
             if (searchUserName) {
                 url += `&searchUserName=${encodeURIComponent(searchUserName)}`;
             }
