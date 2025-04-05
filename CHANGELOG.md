@@ -2,6 +2,16 @@
 
 All notable changes to the extension will be documented in this file.
 
+## Version 0.2.0
+
+### Enhancements
+
+ - 可以查看比赛排行榜了
+
+### Bug Fixes
+
+无
+
 ## Version 0.1.1
 
 ### Enhancements
