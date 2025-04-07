@@ -1,11 +1,3 @@
-/**
- * 比赛信息
- */
-export interface Contest {
-    id: number;
-    name?: string;
-}
-
 export interface Response<T> {
     msg: string;
     code: number;
@@ -47,6 +39,69 @@ export const ApiResult = {
         };
     }
 };
+
+export interface ContestInfo {
+    sourceId: number;
+    signUpEndTime: number;
+    rankType: number;
+    tagId: number;
+    isAcmSuperAdmin: boolean;
+    rating: number;
+    competitionSystem_var: string;
+    description: string;
+    isAcmNormalAdmin: boolean;
+    type: number;
+    countDownTime: number;
+    allowShare: boolean;
+    uid: number;
+    isOpen_var: string;
+    sponsor_var: string;
+    isManager: boolean;
+    startTime: number;
+    signUpStartTime: number;
+    isTeamSignUp: boolean;
+    fissionActivityInfo: { isFissionActivity: boolean };
+    isSignUp: boolean;
+    rankingVisible: boolean;
+    topCategoryId: number;
+    rankTypeInfo: string;
+    competitionName_var: string;
+    personal: number;
+    isFinished: boolean;
+    settingInfo: {
+        allowTeamSignUp: boolean;
+        isProblemAutoOpen: boolean;
+        needSignUpField: boolean;
+        excitationStatus: string;
+        problemOriginal: boolean;
+        needRankFrozen: boolean;
+        logoUrl: string;
+        needSignUpRedirect: boolean;
+        forceOnlyMyStatusFilter: boolean;
+        needUserNameFormat: boolean;
+        sameEndTimeAsSignUpEnd: boolean;
+        ratingUpperLimit: number;
+        nbCount: number;
+        managerList: number[];
+        needPassword: boolean;
+        organizerName: string;
+        needCharge: boolean;
+        allowMessage: boolean;
+        ratingStatus: string;
+        needRatingUpperLimit: boolean;
+        rankSaveStatus: string;
+    };
+    signUpCount: number;
+    contestId: number;
+    competitionType_var: string;
+    chargedWaitSignUp: boolean;
+    name: string;
+    contestType: number;
+    needCharge: boolean;
+    endTime: number;
+    signUpId: number;
+    category: number;
+}
 
 /**
  * 比赛题目列表
@@ -184,7 +239,7 @@ export interface SubmissionListItem {
 /**
  * 配置文件内容
  */
-export interface NowCoderConfig {
+export interface NowcoderConfig {
     contestId: number;
     problems?: Problem[];
 }

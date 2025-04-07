@@ -2,13 +2,13 @@ import path from "path";
 import crypto from 'crypto';
 import fs from 'fs';
 import { CphProb, CphTest, Problem } from "../models/models";
-import { ContestManager } from "./contestManager";
+import { ContestService } from "./contestService";
 import { getCphSaveLocationPref } from "../utils/perferenceHelper";
 
 export class CphService {
-    private contestManager: ContestManager;
+    private contestManager: ContestService;
 
-    constructor(contestManager: ContestManager) {
+    constructor(contestManager: ContestService) {
         this.contestManager = contestManager;
     }
 

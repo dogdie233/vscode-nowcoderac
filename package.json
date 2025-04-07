@@ -25,7 +25,7 @@
     ],
     "commands": [
       {
-        "command": "nowcoderac.createContestWorkspace",
+        "command": "nowcoderac.createContestSpace",
         "title": "创建比赛工作空间",
         "category": "NowCoder"
       },

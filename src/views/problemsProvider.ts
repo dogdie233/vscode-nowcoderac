@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { Problem } from '../models/models';
-import { ContestManager } from '../services/contestManager';
+import { IContestDataProvider } from '../services/contestDataProvider.interface';
 
 export class ProblemsProvider implements vscode.TreeDataProvider<ProblemItem> {
     private _onDidChangeTreeData = new vscode.EventEmitter<ProblemItem | undefined | null | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
     
-    constructor(private contestManager: ContestManager) {
+    constructor(private dataProvider: IContestDataProvider) {
         // 监听题目更新
-        contestManager.onProblemsUpdated(() => {
+        dataProvider.onProblemsUpdated(() => {
             this.refresh();
         });
     }
@@ -26,7 +26,7 @@ export class ProblemsProvider implements vscode.TreeDataProvider<ProblemItem> {
             return [];
         }
         
-        const problems = await this.contestManager.getProblems();
+        const problems = await this.dataProvider.getProblems();
         if (!problems || problems.length === 0) {
             return [];
         }

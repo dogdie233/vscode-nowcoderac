@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
 import { SubmissionListItem } from '../models/models';
-import { ContestManager } from '../services/contestManager';
+import { IContestDataProvider } from '../services/contestDataProvider.interface';
 
 export class SubmissionsProvider implements vscode.TreeDataProvider<SubmissionItem | MessageItem> {
     private _onDidChangeTreeData = new vscode.EventEmitter<SubmissionItem | undefined | null | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
     
-    constructor(private contestManager: ContestManager) {
+    constructor(private dataProvider: IContestDataProvider) {
         // 监听提交状态更新
-        contestManager.onSubmissionStatusChanged(() => {
+        dataProvider.onSubmissionStatusChanged(() => {
             this.refresh();
         });
-        contestManager.onSubmissionsUpdated(() => {
+        dataProvider.onSubmissionsUpdated(() => {
             this.refresh();
         });
     }
@@ -30,7 +30,7 @@ export class SubmissionsProvider implements vscode.TreeDataProvider<SubmissionIt
         }
         
         try {
-            const submissions = await this.contestManager.getSubmissions();
+            const submissions = await this.dataProvider.getSubmissions();
             if (!submissions || submissions.length === 0) {
                 return [new MessageItem('暂无提交记录', '交一发先')];
             }

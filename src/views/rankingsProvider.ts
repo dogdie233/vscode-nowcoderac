@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
 import { ProblemRankData, RankBasicInfo, RankData } from '../models/models';
-import { ContestManager } from '../services/contestManager';
+import { IContestDataProvider } from '../services/contestDataProvider.interface';
 
 export class RankingsProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     private _onDidChangeTreeData = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
     
-    constructor(private contestManager: ContestManager) {
-        contestManager.onRankUpdated(() => {
+    constructor(private dataProvider: IContestDataProvider) {
+        dataProvider.onRankUpdated(() => {
             this.refresh();
         });
-        contestManager.onSubmissionStatusChanged(() => {
+        dataProvider.onSubmissionStatusChanged(() => {
             this.refresh();
         });
     }
@@ -28,7 +28,7 @@ export class RankingsProvider implements vscode.TreeDataProvider<vscode.TreeItem
             return [];
         }
 
-        const rankings = await this.contestManager.getRealtimeRank();
+        const rankings = await this.dataProvider.getRealtimeRank();
         if (!rankings) {
             return [new vscode.TreeItem('暂无排名信息', vscode.TreeItemCollapsibleState.None)];
         }

@@ -1,12 +1,28 @@
 import { httpClient } from './httpClient';
-import { HtmlParser } from '../utils/htmlParser';
-import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG, ProblemExtra, SubmissionListItem, ContestProblemList, Response, SubmissionList, ApiResult, RealtimeRank } from '../models/models';
+import { parseContestPage, parseProblemPage } from '../utils/htmlParser';
+import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG, ProblemExtra, ContestProblemList, Response, SubmissionList, ApiResult, RealtimeRank, ContestInfo } from '../models/models';
 
 /**
  * NowCoder服务，封装与NowCoder平台的API交互
  */
 export class NowcoderService {
     private static readonly BASE_URL = 'https://ac.nowcoder.com';
+
+    async getContestInfo(contestId: number) : Promise<ApiResult<ContestInfo>> {
+        try {
+            const url = `${NowcoderService.BASE_URL}/acm/contest/${contestId}`;
+            const html = await httpClient.getHtml(url);
+            const contestInfo = parseContestPage(html);
+            if (contestInfo) {
+                return ApiResult.success(contestInfo);
+            } else {
+                return ApiResult.failure('解析比赛信息失败，可能是没登录？');
+            }
+        } catch (error) {
+            console.error(`Error fetching contest info for ${contestId}:`, error);
+            return ApiResult.failure('网络错误: ' + (error instanceof Error ? error.message : String(error)));
+        }
+    }
     
     /**
      * 获取比赛的题目列表
@@ -39,7 +55,7 @@ export class NowcoderService {
             const url = `${NowcoderService.BASE_URL}/acm/contest/${contestId}/${questionIndex}`;
             const html = await httpClient.getHtml(url);
             
-            const parsedData = HtmlParser.parseProblemPage(html);
+            const parsedData = parseProblemPage(html);
             
             return ApiResult.success(parsedData);
         } catch (error) {
