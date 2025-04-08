@@ -49,8 +49,6 @@ export const createContestSpace = async () => {
 
         // 创建比赛文件夹
         const contestFolderPath = path.join(folderUri[0].fsPath, contestIdStr);
-        fs.mkdirSync(contestFolderPath);
-
         ContestSpaceManager.getInstance().createContestSpace(contestId, contestFolderPath);
         vscode.window.showInformationMessage(`成功创建比赛工作空间: ${contestIdStr}`);
     } catch (error) {

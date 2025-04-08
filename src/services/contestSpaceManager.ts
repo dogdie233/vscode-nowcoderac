@@ -70,7 +70,9 @@ export class ContestSpaceManager extends vscode.Disposable {
      * @returns ContestService实例
      */
     createContestSpace(contestId: number, contestFolderPath: string): ContestService {
-        fs.mkdirSync(contestFolderPath, { recursive: true });
+        if (!fs.existsSync(contestFolderPath)) {
+            fs.mkdirSync(contestFolderPath, { recursive: true });
+        }
         contestFolderPath = fs.realpathSync(contestFolderPath);
         const configPath = path.join(contestFolderPath, 'nowcoderac.json');
 

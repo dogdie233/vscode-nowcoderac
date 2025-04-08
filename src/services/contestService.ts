@@ -56,16 +56,17 @@ export class ContestService implements IContestDataProvider {
      * @returns ContestService实例
      */
     static create(contestFolderPath: string, configPath: string, contestId: number): ContestService {
-        contestFolderPath = fs.realpathSync(contestFolderPath);
-        configPath = fs.realpathSync(configPath);
-
-        fs.mkdirSync(contestFolderPath, { recursive: true });
+        if (!fs.existsSync(configPath)) {
+            fs.mkdirSync(contestFolderPath, { recursive: true });
+        }
         const config: NowcoderConfig = {
             contestId: contestId,
             problems: []
         };
         const configData = JSON.stringify(config, null, 4);
         fs.writeFileSync(configPath, configData, 'utf-8');
+        contestFolderPath = fs.realpathSync(contestFolderPath);
+        configPath = fs.realpathSync(configPath);
         return new ContestService(contestFolderPath, configPath, config);
     }
 
@@ -234,6 +235,7 @@ export class ContestService implements IContestDataProvider {
             if (!contestInfoResult.success) {
                 throw new Error(`获取比赛信息失败: ${contestInfoResult.error}`);
             }
+            this.contestInfoCache = contestInfoResult.data!;
         }
         
         return this.contestInfoCache;
