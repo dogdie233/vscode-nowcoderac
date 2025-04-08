@@ -192,6 +192,8 @@ export const submitSolution = async (problemItem: ProblemItem | undefined): Prom
         
         const submissionId = await currentContest.submitSolution(code, problem.info.index, compiler);
         await UserInteractiveHelper.showJudgementProgress(submissionId, problem, currentContest.confirmSubmissionStatus);
+        await currentContest.getSubmissions(true);  // 刷新提交记录
+        await currentContest.getRealtimeRank(true);  // 刷新实时排行榜
     });
 };
 
