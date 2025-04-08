@@ -81,9 +81,10 @@ export class ContestServiceEventWrapper implements IContestDataProvider {
         return this.service ? await this.service.getProblem(index, noCache) : null;
     }
 
-    async getProblemExtra(index: string, noCache: boolean = false): Promise<ProblemExtra> {
+    async getProblemExtra(index: string, noCache: boolean = false): Promise<ProblemExtra | undefined> {
         if (!this.service) {
-            throw new Error("No contest service available");
+            return Promise.resolve(undefined);
+
         }
         return await this.service.getProblemExtra(index, noCache);
     }
@@ -92,9 +93,9 @@ export class ContestServiceEventWrapper implements IContestDataProvider {
         return this.service ? await this.service.getSubmissions(noCache) : [];
     }
 
-    async getRealtimeRank(noCache: boolean = false): Promise<RealtimeRank> {
+    async getRealtimeRank(noCache: boolean = false): Promise<RealtimeRank | undefined> {
         if (!this.service) {
-            throw new Error("No contest service available");
+            return Promise.resolve(undefined);
         }
         return await this.service.getRealtimeRank(noCache);
     }

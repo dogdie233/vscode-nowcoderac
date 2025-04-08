@@ -31,7 +31,7 @@ export class ContestSpaceManager {
         }
         
         // 检查配置文件是否存在
-        const result = await vscode.window.showInformationMessage(`检测到新的比赛配置文件: ${potentialConfigPath}，是否打开？`, { modal: true }, { title: '否' }, { title: '是' });
+        const result = await vscode.window.showInformationMessage(`检测到新的比赛配置文件: ${potentialConfigPath}，是否打开？`, { modal: true }, { title: '是' });
         if (result?.title === '是') {
             try {
                 this.openContestSpace(potentialConfigPath);

@@ -9,7 +9,7 @@ export interface IContestDataProvider {
 
     getProblems(noCache?: boolean): Promise<Problem[]>;
     getProblem(index: string, noCache?: boolean): Promise<Problem | null>;
-    getProblemExtra(index: string, noCache?: boolean): Promise<ProblemExtra>;
+    getProblemExtra(index: string, noCache?: boolean): Promise<ProblemExtra | undefined>;
     getSubmissions(noCache?: boolean): Promise<SubmissionListItem[]>;
-    getRealtimeRank(noCache?: boolean): Promise<RealtimeRank>;
+    getRealtimeRank(noCache?: boolean): Promise<RealtimeRank | undefined>;
 }
