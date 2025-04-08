@@ -117,24 +117,19 @@
       ],
       "view/item/context": [
         {
-          "command": "nowcoderac.refreshProblemContent",
+          "command": "nowcoderac.openProblem",
           "when": "view == nowcoderac-problems",
           "group": "inline@1"
         },
         {
-          "command": "nowcoderac.openProblem",
+          "command": "nowcoderac.createCodeFile",
           "when": "view == nowcoderac-problems",
           "group": "inline@2"
         },
         {
-          "command": "nowcoderac.createCodeFile",
-          "when": "view == nowcoderac-problems",
-          "group": "inline@3"
-        },
-        {
           "command": "nowcoderac.submitSolution",
           "when": "view == nowcoderac-problems",
-          "group": "inline@4"
+          "group": "inline@3"
         }
       ]
     }

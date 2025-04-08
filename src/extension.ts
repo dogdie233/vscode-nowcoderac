@@ -4,7 +4,7 @@ import { ProblemsProvider } from './views/problemsProvider';
 import { SubmissionsProvider } from './views/submissionsProvider';
 import { RankingsProvider } from './views/rankingsProvider';
 import { ContestSpaceManager } from './services/contestSpaceManager';
-import { createCodeFile, openProblem, createContestSpace, refreshProblemList, refreshProblemContent, submitSolution, refreshSubmissionList, refreshRealtimeRank } from './services/commands';
+import { createCodeFile, openProblem, createContestSpace, refreshProblemList, submitSolution, refreshSubmissionList, refreshRealtimeRank } from './services/commands';
 import { ContestServiceEventWrapper } from './utils/contestServiceEventWrapper';
 import { ContestCountdownTimer } from './utils/contestCountdownTimer';
 
@@ -60,10 +60,6 @@ export function activate(context: vscode.ExtensionContext) {
     const refreshProblemListDisposable = vscode.commands.registerCommand('nowcoderac.refreshProblemList', refreshProblemList);
     context.subscriptions.push(refreshProblemListDisposable);
 
-    // 刷新题目内容命令
-    const refreshProblemDisposable = vscode.commands.registerCommand('nowcoderac.refreshProblemContent', refreshProblemContent);
-    context.subscriptions.push(refreshProblemDisposable);
-    
     // 打开题目命令
     const openProblemDisposable = vscode.commands.registerCommand('nowcoderac.openProblem', openProblem);
     context.subscriptions.push(openProblemDisposable);

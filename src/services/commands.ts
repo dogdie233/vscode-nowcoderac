@@ -69,31 +69,15 @@ export const refreshProblemList = async () => {
     });
 };
 
-export const refreshProblemContent = async (problemItem: ProblemItem | undefined) => {
-    if (!problemItem) {
-        return;
-    }
-    const problem = problemItem.problem;
-    ensureInContest(async (currentContest) => {
-        vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: `正在刷新题目 "${problem.info.index}" 内容...`,
-            cancellable: false
-        }, async () => {
-            await currentContest.getProblemExtra(problem.info.index, true);
-        });
-    });
-};
-
 export const openProblem = async (problemItem: ProblemItem | undefined): Promise<void> => {
     if (!problemItem) {
         return;
     }
     const problem = problemItem.problem;
     ensureInContest(async (currentContest) => {
-        const extra = problem.extra ?? await currentContest.getProblemExtra(problem.info.index);
+        const extra = await currentContest.getProblemExtra(problem.info.index, true);
         if (!extra) {
-            vscode.window.showErrorMessage(`获取题目"${problem.info.index}"详情失败`);
+            vscode.window.showErrorMessage(`获取题目${problem.info.index}详情失败`);
             return;
         }
 
