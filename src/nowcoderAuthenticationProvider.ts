@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 
+const id = 'nowcoderac-token';
+
 class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
-    private sessions: vscode.AuthenticationSession[] = [];
     private readonly sessionChangeEmitter = new vscode.EventEmitter<vscode.AuthenticationProviderAuthenticationSessionsChangeEvent>();
 
     onDidChangeSessions = this.sessionChangeEmitter.event;
@@ -9,12 +10,16 @@ class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
     constructor(private readonly context: vscode.ExtensionContext) {}
 
     async getSessions(scopes?: string[]): Promise<vscode.AuthenticationSession[]> {
-        return this.sessions;
+        const token = await this.context.secrets.get(id);
+        if (!token) {
+            return [];
+        }
+        return [this.token2Session(token)];
     }
 
     async createSession(scopes: string[]): Promise<vscode.AuthenticationSession> {
         const cookieStr = await vscode.window.showInputBox({
-            prompt: '请输入NowCoder的cookie值',
+            prompt: '请输入cookie',
             ignoreFocusOut: true,
             password: false
         });
@@ -37,8 +42,8 @@ class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
         if (!token) {
             throw new Error('无效的cookie/token值');
         }
-
-        console.log('NowCoder token:', token);
+        token.replaceAll('\'', '');
+        token.replaceAll('"', '');
 
         const session: vscode.AuthenticationSession = {
             id: Date.now().toString(),
@@ -50,29 +55,40 @@ class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
             scopes: []
         };
 
-        this.sessions.push(session);
         this.sessionChangeEmitter.fire({
             added: [session],
             removed: [],
             changed: []
         });
 
-        await this.context.secrets.store(`nowcoderac-${session.id}`, token);
+        await this.context.secrets.store(id, token);
         return session;
     }
 
     async removeSession(sessionId: string): Promise<void> {
-        const sessionIndex = this.sessions.findIndex(s => s.id === sessionId);
-        if (sessionIndex > -1) {
-            const session = this.sessions[sessionIndex];
-            this.sessions.splice(sessionIndex, 1);
-            this.sessionChangeEmitter.fire({
-                added: [],
-                removed: [session],
-                changed: []
-            });
-            await this.context.secrets.delete(`nowcoderac-${sessionId}`);
+        const token = await this.context.secrets.get(id);
+        if (!token) {
+            return;
         }
+        await this.context.secrets.delete(id);
+        const session = this.token2Session(token);
+        this.sessionChangeEmitter.fire({
+            added: [],
+            removed: [session],
+            changed: []
+        });
+    }
+
+    private token2Session(token: string): vscode.AuthenticationSession {
+        return {
+            id: id,
+            accessToken: token,
+            account: {
+                label: id,
+                id: id
+            },
+            scopes: []
+        };
     }
 }
 
