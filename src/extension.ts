@@ -6,6 +6,7 @@ import { RankingsProvider } from './views/rankingsProvider';
 import { ContestSpaceManager } from './services/contestSpaceManager';
 import { createCodeFile, openProblem, createContestSpace, refreshProblemList, refreshProblemContent, submitSolution, refreshSubmissionList, refreshRealtimeRank } from './services/commands';
 import { ContestServiceEventWrapper } from './utils/contestServiceEventWrapper';
+import { ContestCountdownTimer } from './utils/contestCountdownTimer';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -18,6 +19,10 @@ export function activate(context: vscode.ExtensionContext) {
     const problemsProvider = new ProblemsProvider(contestServiceEventWrapper);
     const submissionsProvider = new SubmissionsProvider(contestServiceEventWrapper);
     const rankingsProvider = new RankingsProvider(contestServiceEventWrapper);
+    
+    // 初始化倒计时
+    const countdownTimer = new ContestCountdownTimer();
+    context.subscriptions.push(countdownTimer);
 
     context.subscriptions.push(contestSpaceManager);
     
