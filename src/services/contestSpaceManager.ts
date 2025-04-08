@@ -3,17 +3,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ContestService } from './contestService';
 
-export class ContestSpaceManager {
+export class ContestSpaceManager extends vscode.Disposable {
     private static instance: ContestSpaceManager | undefined = undefined;
     private readonly _onContestSpaceChanged = new vscode.EventEmitter<ContestService | undefined>();
+    private readonly _textEditorChangedListener: vscode.Disposable;
     private currentContest: ContestService | undefined = undefined;
 
     readonly onContestSpaceChanged = this._onContestSpaceChanged.event;
 
     private constructor(context: vscode.ExtensionContext) {
+        super(() => {
+            this._textEditorChangedListener.dispose();
+            ContestSpaceManager.instance = undefined;
+        });
+        
         this.currentContest = undefined;
 
-        vscode.window.onDidChangeActiveTextEditor(this.handleActiveEditorChange, this);
+        this._textEditorChangedListener = vscode.window.onDidChangeActiveTextEditor(this.handleActiveEditorChange, this);
     }
 
     private async handleActiveEditorChange(editor: vscode.TextEditor | undefined): Promise<void> {

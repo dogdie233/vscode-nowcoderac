@@ -18,19 +18,24 @@ export function activate(context: vscode.ExtensionContext) {
     const problemsProvider = new ProblemsProvider(contestServiceEventWrapper);
     const submissionsProvider = new SubmissionsProvider(contestServiceEventWrapper);
     const rankingsProvider = new RankingsProvider(contestServiceEventWrapper);
+
+    context.subscriptions.push(contestSpaceManager);
     
     // 注册视图
-    vscode.window.createTreeView('nowcoderac-problems', {
+    const problemsTreeView = vscode.window.createTreeView('nowcoderac-problems', {
         treeDataProvider: problemsProvider
     });
+    context.subscriptions.push(problemsTreeView);
     
-    vscode.window.createTreeView('nowcoderac-submissions', {
+    const submissionsTreeView = vscode.window.createTreeView('nowcoderac-submissions', {
         treeDataProvider: submissionsProvider
     });
+    context.subscriptions.push(submissionsTreeView);
     
-    vscode.window.createTreeView('nowcoderac-rankings', {
+    const rankingsTreeView = vscode.window.createTreeView('nowcoderac-rankings', {
         treeDataProvider: rankingsProvider
     });
+    context.subscriptions.push(rankingsTreeView);
     
     // 注册身份验证提供者
     const authProvider = new NowCoderAuthenticationProvider(context);
