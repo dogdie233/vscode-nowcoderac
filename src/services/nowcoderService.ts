@@ -8,6 +8,11 @@ import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG
 export class NowcoderService {
     private static readonly BASE_URL = 'https://ac.nowcoder.com';
 
+    /**
+     * 获取比赛信息
+     * @param contestId 比赛ID
+     * @returns 比赛信息
+     */
     async getContestInfo(contestId: number) : Promise<ApiResult<ContestInfo>> {
         try {
             const url = `${NowcoderService.BASE_URL}/acm/contest/${contestId}`;

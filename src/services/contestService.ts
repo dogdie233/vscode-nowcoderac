@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { nowcoderService } from './nowcoderService';
-import { Problem, SubmissionStatus, NowcoderCompiler, ProblemInfo, ProblemExtra, SubmissionListItem, RealtimeRank, NowcoderConfig } from '../models/models';
+import { Problem, SubmissionStatus, NowcoderCompiler, ProblemInfo, ProblemExtra, SubmissionListItem, RealtimeRank, NowcoderConfig, ContestInfo } from '../models/models';
 import { CphService } from './cphService';
 import { IContestDataProvider } from './contestDataProvider.interface';
 
@@ -24,6 +24,7 @@ export class ContestService implements IContestDataProvider {
 
     private submissionsCache: SubmissionListItem[] = [];
     private realtimeRankCache: RealtimeRank | undefined = undefined;
+    private contestInfoCache: ContestInfo | undefined = undefined;
 
     private constructor(private readonly contestFolderPath: string, private readonly configPath: string, private readonly config: NowcoderConfig) {
         this.cphService = new CphService(this);
@@ -225,5 +226,16 @@ export class ContestService implements IContestDataProvider {
         }
 
         return this.realtimeRankCache;
+    }
+
+    async getContestInfo(noCache: boolean = false): Promise<ContestInfo | undefined> {
+        if (noCache || !this.contestInfoCache) {
+            const contestInfoResult = await nowcoderService.getContestInfo(this.config.contestId);
+            if (!contestInfoResult.success) {
+                throw new Error(`获取比赛信息失败: ${contestInfoResult.error}`);
+            }
+        }
+        
+        return this.contestInfoCache;
     }
 }
