@@ -70,6 +70,16 @@
         "title": "刷新实时排名",
         "icon": "$(refresh)",
         "category": "NowCoder"
+      },
+      {
+        "command": "nowcoderac.login",
+        "title": "登录牛客网",
+        "category": "NowCoder"
+      },
+      {
+        "command": "nowcoderac.logout",
+        "title": "登出牛客网",
+        "category": "NowCoder"
       }
     ],
     "viewsContainers": {

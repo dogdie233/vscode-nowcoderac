@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { httpClient } from './httpClient';
 import { parseContestPage, parseProblemPage } from '../utils/htmlParser';
 import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG, ProblemExtra, ContestProblemList, Response, SubmissionList, ApiResult, RealtimeRank, ContestInfo } from '../models/models';
@@ -8,6 +9,11 @@ import { SubmissionResponse, SubmissionStatus, NowcoderCompiler, COMPILER_CONFIG
 export class NowcoderService {
     private static readonly BASE_URL = 'https://ac.nowcoder.com';
 
+    private tokenExpired<T>(): ApiResult<T> {
+        vscode.commands.executeCommand('nowcoderac.logout');
+        return ApiResult.failure('登录信息已过期，请重新登录');
+    }
+
     /**
      * 获取比赛信息
      * @param contestId 比赛ID
@@ -16,7 +22,10 @@ export class NowcoderService {
     async getContestInfo(contestId: number) : Promise<ApiResult<ContestInfo>> {
         try {
             const url = `${NowcoderService.BASE_URL}/acm/contest/${contestId}`;
-            const html = await httpClient.getHtml(url);
+            const { status, html } = await httpClient.getHtml(url);
+            if (status === 301) {
+                return this.tokenExpired();
+            }
             const contestInfo = parseContestPage(html);
             if (contestInfo) {
                 return ApiResult.success(contestInfo);
@@ -58,7 +67,10 @@ export class NowcoderService {
     async getProblemExtra(contestId: number, questionIndex: string): Promise<ApiResult<ProblemExtra>> {
         try {
             const url = `${NowcoderService.BASE_URL}/acm/contest/${contestId}/${questionIndex}`;
-            const html = await httpClient.getHtml(url);
+            const { status, html } = await httpClient.getHtml(url);
+            if (status === 301) {
+                return this.tokenExpired();
+            }
             
             const parsedData = parseProblemPage(html);
             
@@ -102,6 +114,9 @@ export class NowcoderService {
             };
             
             const response = await httpClient.postForm<SubmissionResponse>(url, formData);
+            if (response.code === 1 && response.msg === '请先登录') {
+                return this.tokenExpired();
+            }
             return ApiResult.success(response);
         } catch (error) {
             console.error(`Error submitting solution for ${questionId}:`, error);
@@ -164,6 +179,17 @@ export class NowcoderService {
         } catch (error) {
             console.error('Error fetching realtime rank:', error);
             return ApiResult.failure('网络错误: ' + (error instanceof Error ? error.message : String(error)));
+        }
+    }
+
+    async isSessionValid(): Promise<boolean | undefined> {
+        try {
+            const url = `${NowcoderService.BASE_URL}/nccommon/token/login-other-place`;
+            const response = await httpClient.get<Response<void>>(url);
+            return response && response.code === 0;
+        } catch (error) {
+            console.error('Error checking session validity:', error);
+            return undefined;
         }
     }
 }

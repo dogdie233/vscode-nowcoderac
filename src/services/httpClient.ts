@@ -5,64 +5,47 @@ import * as vscode from 'vscode';
  * HTTP客户端
  */
 export class HttpClient {
-    private client: AxiosInstance;
-    private token: string | undefined;
+    client: AxiosInstance;
+
+    /**
+     * 获取插件版本号
+     */
+    private getExtensionVersion(): string {
+        const extension = vscode.extensions.getExtension('dogdie233.nowcoderac');
+        return extension?.packageJSON.version || '1.0.0';
+    }
 
     constructor() {
+        const version = this.getExtensionVersion();
         this.client = axios.create({
             headers: {
-                'Content-Type': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 NowCoderAC/${version}`
             }
         });
     }
 
     /**
-     * 设置身份验证Token
-     * @param token 认证令牌
-     */
-    setToken(token: string) {
-        this.token = token;
-    }
-
-    /**
      * 获取身份验证Token
      */
-    async getToken(): Promise<string | undefined> {
-        if (this.token) {
-            return this.token;
+    async getToken(): Promise<string> {
+        const session = await vscode.authentication.getSession('nowcoderac', [], { createIfNone: true });
+        if (!session) {
+            throw new Error('未授权，请先登录NowCoder账号');
         }
-
-        try {
-            const session = await vscode.authentication.getSession('nowcoderac', [], { createIfNone: true });
-            if (session) {
-                this.token = session.accessToken;
-                return this.token;
-            }
-        } catch (error) {
-            console.error('Failed to get authentication session:', error);
-        }
-
-        return undefined;
+        return session.accessToken;
     }
 
     /**
      * 发送GET请求
      * @param url 请求URL
-     * @param config 请求配置
      * @returns 响应数据
      */
-    async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    async get<T>(url: string): Promise<T> {
         const token = await this.getToken();
-        if (!token) {
-            throw new Error('未授权，请先登录NowCoder账号');
-        }
 
         const requestConfig: AxiosRequestConfig = {
-            ...config,
             headers: {
-                ...config?.headers,
-                Cookie: `t=${token}`
+                Cookie: `t=${token}`,
             }
         };
 
@@ -79,20 +62,15 @@ export class HttpClient {
      * 发送POST请求
      * @param url 请求URL
      * @param data 请求数据
-     * @param config 请求配置
      * @returns 响应数据
      */
-    async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    async post<T>(url: string, data?: any): Promise<T> {
         const token = await this.getToken();
-        if (!token) {
-            throw new Error('未授权，请先登录NowCoder账号');
-        }
 
         const requestConfig: AxiosRequestConfig = {
-            ...config,
             headers: {
-                ...config?.headers,
-                Cookie: `t=${token}`
+                Cookie: `t=${token}`,
+                "Content-Type": 'application/json; charset=UTF-8',
             }
         };
 
@@ -113,10 +91,7 @@ export class HttpClient {
      */
     async postForm<T>(url: string, formData: Record<string, any>): Promise<T> {
         const token = await this.getToken();
-        if (!token) {
-            throw new Error('未授权，请先登录NowCoder账号');
-        }
-
+        
         const params = new URLSearchParams();
         Object.entries(formData).forEach(([key, value]) => {
             params.append(key, String(value));
@@ -143,24 +118,23 @@ export class HttpClient {
      * @param url 请求URL
      * @returns HTML字符串
      */
-    async getHtml(url: string): Promise<string> {
+    async getHtml(url: string): Promise<{status: number, html: string}> {
         const token = await this.getToken();
-        if (!token) {
-            throw new Error('未授权，请先登录NowCoder账号');
-        }
 
         const config: AxiosRequestConfig = {
             headers: {
                 Cookie: `t=${token}`,
                 Accept: 'text/html',
-                "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 NowCoderAC/1.0.0'
             },
             responseType: 'text'
         };
 
         try {
             const response = await this.client.get(url, config);
-            return response.data;
+            return {
+                status: response.status,
+                html: response.data
+            };
         } catch (error) {
             console.error(`GET HTML request to ${url} failed:`, error);
             throw new Error(`请求失败: ${(error as Error).message}`);

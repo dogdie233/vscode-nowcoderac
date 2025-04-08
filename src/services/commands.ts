@@ -7,6 +7,7 @@ import { COMPILER_CONFIG, Problem } from '../models/models';
 import { CodeHelper } from '../utils/codeHelper';
 import { ContestService } from './contestService';
 import { ProblemItem } from '../views/problemsProvider';
+import { NowcoderAuthenticationProvider } from '../nowcoderAuthenticationProvider';
 
 async function ensureInContest(callback: (currentContest: ContestService) => Promise<void>) {
     const contestManager = ContestSpaceManager.getInstance().getContestService();
@@ -201,4 +202,13 @@ export const refreshRealtimeRank = async () => {
             await currentContest.getRealtimeRank(true);
         });
     });
+};
+
+export const login = async (context: vscode.ExtensionContext) => {
+    NowcoderAuthenticationProvider.clearToken(context);
+    vscode.authentication.getSession('nowcoderac', [], { createIfNone: true });  
+};
+
+export const logout = async (context: vscode.ExtensionContext) => {
+    NowcoderAuthenticationProvider.clearToken(context);
 };

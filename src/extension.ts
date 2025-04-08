@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { NowCoderAuthenticationProvider } from './nowcoderAuthenticationProvider';
+import { NowcoderAuthenticationProvider } from './nowcoderAuthenticationProvider';
 import { ProblemsProvider } from './views/problemsProvider';
 import { SubmissionsProvider } from './views/submissionsProvider';
 import { RankingsProvider } from './views/rankingsProvider';
 import { ContestSpaceManager } from './services/contestSpaceManager';
-import { createCodeFile, openProblem, createContestSpace, refreshProblemList, submitSolution, refreshSubmissionList, refreshRealtimeRank } from './services/commands';
+import { createCodeFile, openProblem, createContestSpace, refreshProblemList, submitSolution, refreshSubmissionList, refreshRealtimeRank, login, logout } from './services/commands';
 import { ContestServiceEventWrapper } from './utils/contestServiceEventWrapper';
 import { ContestCountdownTimer } from './utils/contestCountdownTimer';
 
@@ -43,11 +43,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(rankingsTreeView);
     
     // 注册身份验证提供者
-    const authProvider = new NowCoderAuthenticationProvider(context);
+    const authProvider = new NowcoderAuthenticationProvider(context);
     context.subscriptions.push(
         vscode.authentication.registerAuthenticationProvider(
             "nowcoderac",
-            "NowCoder",
+            "NowcoderAC",
             authProvider
         )
     );
@@ -79,6 +79,14 @@ export function activate(context: vscode.ExtensionContext) {
     // 刷新排名命令
     const refreshRankingsDisposable = vscode.commands.registerCommand('nowcoderac.refreshRealtimeRank', refreshRealtimeRank);
     context.subscriptions.push(refreshRankingsDisposable);
+
+    // 登录命令
+    const loginDisposable = vscode.commands.registerCommand('nowcoderac.login', () => login(context));
+    context.subscriptions.push(loginDisposable);
+
+    // 登出命令
+    const logoutDisposable = vscode.commands.registerCommand('nowcoderac.logout', () => logout(context));
+    context.subscriptions.push(logoutDisposable);
 }
 
 // This method is called when your extension is deactivated

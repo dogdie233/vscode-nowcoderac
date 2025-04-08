@@ -1,16 +1,15 @@
 import * as vscode from 'vscode';
 
-const id = 'nowcoderac-token';
-
-class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
+export class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
     private readonly sessionChangeEmitter = new vscode.EventEmitter<vscode.AuthenticationProviderAuthenticationSessionsChangeEvent>();
+    static readonly id = 'nowcoderac-token';
 
     onDidChangeSessions = this.sessionChangeEmitter.event;
 
     constructor(private readonly context: vscode.ExtensionContext) {}
 
     async getSessions(scopes?: string[]): Promise<vscode.AuthenticationSession[]> {
-        const token = await this.context.secrets.get(id);
+        const token = await this.context.secrets.get(NowcoderAuthenticationProvider.id);
         if (!token) {
             return [];
         }
@@ -61,16 +60,16 @@ class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
             changed: []
         });
 
-        await this.context.secrets.store(id, token);
+        await this.context.secrets.store(NowcoderAuthenticationProvider.id, token);
         return session;
     }
 
     async removeSession(sessionId: string): Promise<void> {
-        const token = await this.context.secrets.get(id);
+        const token = await this.context.secrets.get(NowcoderAuthenticationProvider.id);
         if (!token) {
             return;
         }
-        await this.context.secrets.delete(id);
+        await this.context.secrets.delete(NowcoderAuthenticationProvider.id);
         const session = this.token2Session(token);
         this.sessionChangeEmitter.fire({
             added: [],
@@ -81,15 +80,17 @@ class NowcoderAuthenticationProvider implements vscode.AuthenticationProvider {
 
     private token2Session(token: string): vscode.AuthenticationSession {
         return {
-            id: id,
+            id: NowcoderAuthenticationProvider.id,
             accessToken: token,
             account: {
-                label: id,
-                id: id
+                label: NowcoderAuthenticationProvider.id,
+                id: NowcoderAuthenticationProvider.id
             },
             scopes: []
         };
     }
-}
 
-export { NowcoderAuthenticationProvider as NowCoderAuthenticationProvider };
+    static async clearToken(context: vscode.ExtensionContext) {
+        await context.secrets.delete(NowcoderAuthenticationProvider.id);
+    };
+}
