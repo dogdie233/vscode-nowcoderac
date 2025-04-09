@@ -132,24 +132,23 @@ function parseContentRich($: cheerio.Root, element: cheerio.Cheerio): string {
                 case 'p':
                     return '  \n' + processChildren(node) + '  \n';
                 case 'div':
+                case 'pre':
                     return processChildren(node) + '  \n';
                 case 'strong':
                 case 'b':
-                    return `**${processChildren(node)}**`;
+                    return `__${processChildren(node).trim()}__`;
                 case 'em':
                 case 'i':
-                    return `*${processChildren(node)}*`;
+                    return `_${processChildren(node).trim()}_`;
                 case 'u':
                     // 检查u标签下是否有strong子标签
                     const firstChild = node.firstChild;
                     if (firstChild && firstChild.type === 'tag' && firstChild.name === 'strong') {
-                        return `**${$(firstChild).text().trim()}**`;
+                        return `__${$(firstChild).text().trim()}__`;
                     }
-                    return `__${processChildren(node)}__`;
+                    return `<u>${processChildren(node)}</u>`;
                 case 'code':
                     return `\`${processChildren(node)}\``;
-                case 'pre':
-                    return `\n\`\`\`\n${processChildren(node)}\n\`\`\`\n`;
                 case 'ul':
                     return processChildren(node);
                 case 'ol':
@@ -163,6 +162,9 @@ function parseContentRich($: cheerio.Root, element: cheerio.Cheerio): string {
                 case 'th':
                 case 'td':
                     return `| ${processChildren(node)} `;
+                case 'blockquote':
+                    const text = processChildren(node).trim().split('\n').map(line => `> ${line}`).join('\n');
+                    return `\n${text}\n\n`;
                 default:
                     // 默认处理：递归处理子节点
                     return processChildren(node);
@@ -176,25 +178,50 @@ function parseContentRich($: cheerio.Root, element: cheerio.Cheerio): string {
     const processChildren = (node: cheerio.Element): string => {
         let result = '';
         $(node).contents().each((_, child) => {
-            result += parseNode(child as cheerio.Element);
+            let parseResult = parseNode(child as cheerio.Element);
+            
+            // 做一些额外的处理
+            // 删除每一行前面的空格
+            if ((result.endsWith('\n') || result === '') && parseResult.startsWith(' ')) {
+                parseResult = trimStartSpace(parseResult); // 去掉开头的空格
+            }
+
+            // 合并相同的样式
+            const trailingUnderlines = countTrailingUnderlines(result);
+            const leadingUnderlines = countLeadingUnderlines(parseResult);
+            if (trailingUnderlines !== 0 && leadingUnderlines !== 0) {
+                if (trailingUnderlines === countLeadingUnderlines(parseResult)) {
+                    // 合并相同的样式
+                   result = result.substring(0, result.length - trailingUnderlines);
+                   parseResult = parseResult.substring(trailingUnderlines);
+               } else {
+                   parseResult = '<wbr>' + parseResult; // 不同的样式，添加零宽空格
+               }
+            }
+
+            result += parseResult;
         });
         return result;
     };
     
     // 处理根元素
-    let result = '';
-    element.contents().each((_, node) => {
-        result += parseNode(node as cheerio.Element);
-    });
-    
-    // 后处理
-    // 合并连续的加粗、斜体等标记
-    result = result.replaceAll('****', '');
-    result = result.replaceAll('____', '');
-    result = result.replaceAll('**__', '**');
-    result = result.replaceAll('__**', '**');
+    let result = parseNode(element[0]);
     
     return result;
+}
+
+function trimStartSpace(str: string): string {
+    return str.replace(/^[ ]+/, '');
+}
+
+function countLeadingUnderlines(str: string): number {
+    const match = str.match(/^_+/);
+    return match ? match[0].length : 0;
+}
+
+function countTrailingUnderlines(str: string): number {
+    const match = str.match(/_+$/);
+    return match ? match[0].length : 0;
 }
 
 /**
