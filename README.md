@@ -1,5 +1,8 @@
 # NowcoderAC for Visual Studio Code
 
+[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/dogdie233.nowcoderac?labelColor=24acf2&color=333333&label=VSMarketplace)](https://marketplace.visualstudio.com/items?itemName=dogdie233.nowcoderac)
+[![OpenVSX Downloads](https://img.shields.io/open-vsx/dt/dogdie233/nowcoderac?labelColor=a60ee5&color=333333&label=OpenVSX)](https://open-vsx.org/extension/dogdie233/nowcoderac)
+
 你甚至可以在vsc里看题，做题，交题
 
 > [!WARNING]  
