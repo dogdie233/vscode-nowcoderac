@@ -20,6 +20,7 @@ export class ContestSpaceManager extends vscode.Disposable {
         this.currentContest = undefined;
 
         this._textEditorChangedListener = vscode.window.onDidChangeActiveTextEditor(this.handleActiveEditorChange, this);
+        this.handleActiveEditorChange(vscode.window.activeTextEditor);  // 以当前打开的编辑器触发一次事件
     }
 
     private async handleActiveEditorChange(editor: vscode.TextEditor | undefined): Promise<void> {
