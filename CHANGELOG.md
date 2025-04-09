@@ -2,6 +2,23 @@
 
 All notable changes to the extension will be documented in this file.
 
+## Version 0.3.0
+
+### Enhancements
+
+ - 赛时计时器
+ - 持久化token
+ - token失效检测
+ - 改进了题目解析
+ - 打开题目时添加进度条
+ - 打开题目时在侧边栏显示markdown的预览
+ - 切换比赛空间询问
+ - 点击赛时计时器可以创建比赛空间
+
+### Bug Fixes
+
+ - 禁用插件时禁用不干净
+
 ## Version 0.2.0
 
 ### Enhancements
