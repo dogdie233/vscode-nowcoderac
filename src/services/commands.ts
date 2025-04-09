@@ -76,41 +76,47 @@ export const openProblem = async (problemItem: ProblemItem | undefined): Promise
     }
     const problem = problemItem.problem;
     ensureInContest(async (currentContest) => {
-        const extra = await currentContest.getProblemExtra(problem.info.index, true);
-        if (!extra) {
-            vscode.window.showErrorMessage(`获取题目${problem.info.index}详情失败`);
-            return;
-        }
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `正在打开题目 ${problem.info.index}...`,
+            cancellable: false
+        }, async () => {
+            const extra = await currentContest.getProblemExtra(problem.info.index, true);
+            if (!extra) {
+                vscode.window.showErrorMessage(`获取题目${problem.info.index}详情失败`);
+                return;
+            }
 
-        const contestFolderPath = currentContest.getContestFolderPath();
-        const fileName = `${problem.info.index}.md`;
-        const filePath = path.join(contestFolderPath, fileName);
+            const contestFolderPath = currentContest.getContestFolderPath();
+            const fileName = `${problem.info.index}.md`;
+            const filePath = path.join(contestFolderPath, fileName);
 
-        // 生成Markdown内容
-        let content = `# ${problem.info.index}. ${problem.info.title}\n\n`;
-        content += extra.content;
+            // 生成Markdown内容
+            let content = `# ${problem.info.index}. ${problem.info.title}\n\n`;
+            content += extra.content;
 
-        // 添加样例
-        if (extra.examples && extra.examples.length > 0) {
-            content += '## 样例\n\n';
+            // 添加样例
+            if (extra.examples && extra.examples.length > 0) {
+                content += '## 样例\n\n';
 
-            extra.examples.forEach((example, index) => {
-                content += `### 样例 ${index + 1}\n`;
-                content += `**输入**:\n\`\`\`\n${example.input}\n\`\`\`\n\n`;
-                content += `**输出**:\n\`\`\`\n${example.output}\n\`\`\`\n\n`;
-                if (example.tips) {
-                    content += `**说明**:  \n\n${example.tips}\n\n`;
-                }
-            });
-        }
+                extra.examples.forEach((example, index) => {
+                    content += `### 样例 ${index + 1}\n`;
+                    content += `**输入**:\n\`\`\`\n${example.input}\n\`\`\`\n\n`;
+                    content += `**输出**:\n\`\`\`\n${example.output}\n\`\`\`\n\n`;
+                    if (example.tips) {
+                        content += `**说明**:  \n\n${example.tips}\n\n`;
+                    }
+                });
+            }
 
-        // 写入文件
-        fs.mkdirSync(contestFolderPath, { recursive: true });
-        fs.writeFileSync(filePath, content);
-        
-        // 打开文件
-        const document = await vscode.workspace.openTextDocument(filePath);
-        await vscode.window.showTextDocument(document);
+            // 写入文件
+            fs.mkdirSync(contestFolderPath, { recursive: true });
+            fs.writeFileSync(filePath, content);
+            
+            // 打开文件
+            const document = await vscode.workspace.openTextDocument(filePath);
+            vscode.commands.executeCommand('markdown.showPreviewToSide', document.uri);
+        });
     });
 };
 

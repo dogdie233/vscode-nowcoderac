@@ -137,18 +137,16 @@ export class ContestService implements IContestDataProvider {
         if (!problem) {
             throw new Error(`题目"${index}"不存在`);
         }
-        if (problem.extra && !noCache) {
-            return problem.extra;
+        if (!problem.extra || noCache) {
+            const extraResult = await nowcoderService.getProblemExtra(this.config.contestId, index);
+            if (!extraResult.success) {
+                throw new Error(`获取题目"${index}"详情失败: ${extraResult.error}`);
+            }
+            problem.extra = extraResult.data!;
+            this.saveConfig();
+            this._onProblemsUpdated.fire(this.config.problems!);
         }
 
-        const extraResult = await nowcoderService.getProblemExtra(this.config.contestId, index);
-        if (!extraResult.success) {
-            throw new Error(`获取题目"${index}"详情失败: ${extraResult.error}`);
-        }
-
-        problem.extra = extraResult.data!;
-        this.saveConfig();
-        this._onProblemsUpdated.fire(this.config.problems!);
         return problem.extra;
     }
 
