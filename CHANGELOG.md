@@ -2,6 +2,17 @@
 
 All notable changes to the extension will be documented in this file.
 
+## Version 0.3.1
+
+### Enhancements
+
+ - 提交后刷新题目列表，通过率
+
+### Bug Fixes
+
+ - 提交代码后提交列表一直显示判题中直到手动刷新
+ - 加粗、斜体转换成markdown时错误
+
 ## Version 0.3.0
 
 ### Enhancements
