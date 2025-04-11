@@ -136,15 +136,15 @@ function parseContentRich($: cheerio.Root, element: cheerio.Cheerio): string {
                     return processChildren(node) + '  \n';
                 case 'strong':
                 case 'b':
-                    return `__${processChildren(node).trim()}__`;
+                    return `**${processChildren(node).trim()}**`;
                 case 'em':
                 case 'i':
-                    return `_${processChildren(node).trim()}_`;
+                    return `*${processChildren(node).trim()}**`;
                 case 'u':
                     // 检查u标签下是否有strong子标签
                     const firstChild = node.firstChild;
                     if (firstChild && firstChild.type === 'tag' && firstChild.name === 'strong') {
-                        return `__${$(firstChild).text().trim()}__`;
+                        return `**${$(firstChild).text().trim()}**`;
                     }
                     return `<u>${processChildren(node)}</u>`;
                 case 'code':
@@ -187,13 +187,13 @@ function parseContentRich($: cheerio.Root, element: cheerio.Cheerio): string {
             }
 
             // 合并相同的样式
-            const trailingUnderlines = countTrailingUnderlines(result);
-            const leadingUnderlines = countLeadingUnderlines(parseResult);
-            if (trailingUnderlines !== 0 && leadingUnderlines !== 0) {
-                if (trailingUnderlines === countLeadingUnderlines(parseResult)) {
+            const trailingAsterisks = countTrailingAsterisks(result);
+            const leadingAsterisks = countLeadingAsterisks(parseResult);
+            if (trailingAsterisks !== 0 && leadingAsterisks !== 0) {
+                if (trailingAsterisks === countLeadingAsterisks(parseResult)) {
                     // 合并相同的样式
-                   result = result.substring(0, result.length - trailingUnderlines);
-                   parseResult = parseResult.substring(trailingUnderlines);
+                   result = result.substring(0, result.length - trailingAsterisks);
+                   parseResult = parseResult.substring(trailingAsterisks);
                } else {
                    parseResult = '<wbr>' + parseResult; // 不同的样式，添加零宽空格
                }
@@ -214,13 +214,13 @@ function trimStartSpace(str: string): string {
     return str.replace(/^[ ]+/, '');
 }
 
-function countLeadingUnderlines(str: string): number {
-    const match = str.match(/^_+/);
+function countLeadingAsterisks(str: string): number {
+    const match = str.match(/^\*+/);
     return match ? match[0].length : 0;
 }
 
-function countTrailingUnderlines(str: string): number {
-    const match = str.match(/_+$/);
+function countTrailingAsterisks(str: string): number {
+    const match = str.match(/\*+$/);
     return match ? match[0].length : 0;
 }
 
