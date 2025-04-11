@@ -11,6 +11,9 @@ export class ProblemsProvider implements vscode.TreeDataProvider<ProblemItem> {
         dataProvider.onProblemsUpdated(() => {
             this.refresh();
         });
+        dataProvider.onSubmissionStatusChanged(() => {
+            this.refresh();
+        });
     }
     
     refresh(): void {
