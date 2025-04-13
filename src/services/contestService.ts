@@ -187,7 +187,10 @@ export class ContestService implements IContestDataProvider {
      * 确认提交状态，用来触发提交状态更新事件
      * @param status 提交状态
      */
-    confirmSubmissionStatus(status: SubmissionStatus) {
+    async confirmSubmissionStatus(status: SubmissionStatus) {
+        await this.getSubmissions(true);
+        await this.getProblems(true);
+        await this.getRealtimeRank(true);
         this._onSubmissionStatusChanged.fire(status);
     }
 

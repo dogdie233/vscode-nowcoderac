@@ -30,7 +30,7 @@ export class SubmissionsProvider implements vscode.TreeDataProvider<SubmissionIt
         }
         
         try {
-            const submissions = await this.dataProvider.getSubmissions(true);
+            const submissions = await this.dataProvider.getSubmissions();
             if (!submissions || submissions.length === 0) {
                 return [new MessageItem('暂无提交记录', '交一发先')];
             }

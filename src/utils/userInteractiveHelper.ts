@@ -29,7 +29,7 @@ export class UserInteractiveHelper {
     static async showJudgementProgress(
         submissionId: number, 
         problem: Problem,
-        onStatusUpdated?: (status: SubmissionStatus) => void
+        onStatusUpdated?: (status: SubmissionStatus) => any
     ): Promise<void> {
         problem.extra = problem.extra ?? await ContestSpaceManager.getInstance().getContestService()?.getProblemExtra(problem.info.index, false);
         if (!problem.extra) {
@@ -81,7 +81,10 @@ export class UserInteractiveHelper {
 
                 // 触发回调函数
                 if (onStatusUpdated) {
-                    onStatusUpdated(status);
+                    const result = onStatusUpdated(status);
+                    if (result instanceof Promise) {
+                        await result;
+                    }
                 }
 
                 return true;
