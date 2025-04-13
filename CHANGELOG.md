@@ -2,6 +2,16 @@
 
 All notable changes to the extension will be documented in this file.
 
+## Version 0.3.2
+
+### Enhancements
+
+无
+
+### Bug Fixes
+
+ - 打开牛客竞赛界面后会不断请求提交列表
+
 ## Version 0.3.1
 
 ### Enhancements
