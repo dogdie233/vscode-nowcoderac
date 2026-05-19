@@ -1,5 +1,8 @@
 # NowcoderAC for Visual Studio Code
 
+> [!IMPORTANT]
+> 本仓库已不再维护，请前往 https://github.com/Handy2233/vscode-nowcoderac 查看
+
 [![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/dogdie233.nowcoderac?labelColor=24acf2&color=333333&label=VSMarketplace)](https://marketplace.visualstudio.com/items?itemName=dogdie233.nowcoderac)
 [![OpenVSX Downloads](https://img.shields.io/open-vsx/dt/dogdie233/nowcoderac?labelColor=a60ee5&color=333333&label=OpenVSX)](https://open-vsx.org/extension/dogdie233/nowcoderac)
 
